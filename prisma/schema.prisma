@@ -1,0 +1,201 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  phone     String?
+  role      String   @default("technician") // admin, manager, supervisor, technician
+  avatar    String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  inspections       Inspection[]
+  assignedWorkOrders WorkOrder[] @relation("AssignedTechnician")
+  createdFaults     Fault[]      @relation("FaultReporter")
+  approvals         WorkOrder[]  @relation("Approver")
+}
+
+model AssetCategory {
+  id          String  @id @default(cuid())
+  nameFa      String
+  nameEn      String
+  icon        String?
+  color       String?
+  sortOrder   Int     @default(0)
+  
+  assets Asset[]
+}
+
+model Location {
+  id        String  @id @default(cuid())
+  name      String
+  floor     String?
+  zone      String?
+  building  String?
+  parentId  String?
+  parent    Location?  @relation("LocationHierarchy", fields: [parentId], references: [id])
+  children  Location[] @relation("LocationHierarchy")
+  
+  assets Asset[]
+}
+
+model Asset {
+  id              String   @id @default(cuid())
+  assetCode       String   @unique
+  nameFa          String
+  nameEn          String?
+  categoryId      String
+  category        AssetCategory @relation(fields: [categoryId], references: [id])
+  brand           String?
+  model           String?
+  serialNumber    String?
+  locationId      String
+  location        Location @relation(fields: [locationId], references: [id])
+  installDate     DateTime?
+  warrantyExpiry  DateTime?
+  capacity        String?
+  specifications  String?
+  criticality     String   @default("medium") // low, medium, high, critical
+  status          String   @default("active") // active, faulty, under_maintenance, retired
+  qrCode          String   @unique
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  inspections      Inspection[]
+  faults           Fault[]
+  workOrders       WorkOrder[]
+  timeline         TimelineEvent[]
+  attachments      AssetAttachment[]
+  checklists       Checklist[]
+}
+
+model AssetAttachment {
+  id        String   @id @default(cuid())
+  assetId   String
+  asset     Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  fileName  String
+  fileType  String   // manual, diagram, photo, spare_parts_list, other
+  fileUrl   String
+  fileSize  Int?
+  createdAt DateTime @default(now())
+}
+
+model Inspection {
+  id            String   @id @default(cuid())
+  assetId       String
+  asset         Asset    @relation(fields: [assetId], references: [id])
+  inspectorId   String
+  inspector     User     @relation(fields: [inspectorId], references: [id])
+  date          DateTime @default(now())
+  shift         String?  // morning, afternoon, night
+  status        String   @default("normal") // normal, warning, critical
+  readings      String?  // JSON string for meter readings, temperature, pressure, etc.
+  runningHours  Float?
+  faultAlarms   String?  // JSON
+  oilLevel      String?  // normal, low, critical
+  vibration     String?  // normal, abnormal
+  noise         String?  // normal, abnormal
+  notes         String?
+  photos        String?  // JSON array of photo URLs
+  createdAt     DateTime @default(now())
+}
+
+model Fault {
+  id            String   @id @default(cuid())
+  assetId       String
+  asset         Asset    @relation(fields: [assetId], references: [id])
+  reportedById  String
+  reportedBy    User     @relation("FaultReporter", fields: [reportedById], references: [id])
+  faultType     String   // electrical, mechanical, hydraulic, control, leakage, other
+  priority      String   @default("medium") // low, medium, high, critical
+  status        String   @default("open") // open, in_progress, resolved, closed
+  description   String
+  reportedAt    DateTime @default(now())
+  resolvedAt    DateTime?
+  resolution    String?
+  photos        String?  // JSON array
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  workOrders  WorkOrder[]
+}
+
+model WorkOrder {
+  id              String    @id @default(cuid())
+  type            String    // preventive, corrective
+  assetId         String
+  asset           Asset     @relation(fields: [assetId], references: [id])
+  faultId         String?
+  fault           Fault?    @relation(fields: [faultId], references: [id])
+  title           String
+  description     String?
+  priority        String    @default("medium") // low, medium, high, critical
+  status          String    @default("pending") // pending, assigned, in_progress, completed, approved, rejected
+  assignedToId    String?
+  assignedTo      User?     @relation("AssignedTechnician", fields: [assignedToId], references: [id])
+  approvedById    String?
+  approvedBy      User?     @relation("Approver", fields: [approvedById], references: [id])
+  scheduledDate   DateTime?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  approvedAt      DateTime?
+  partsConsumed   String?   // JSON
+  photos          String?   // JSON array
+  notes           String?
+  recurrence      String?   // daily, weekly, monthly, quarterly, yearly
+  nextDueDate     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Checklist {
+  id          String   @id @default(cuid())
+  assetId     String
+  asset       Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  title       String
+  type        String   // inspection, pm
+  frequency   String?  // daily, weekly, monthly, quarterly
+  items       String   // JSON array of checklist items
+  isActive    Boolean  @default(true)
+  lastDoneAt  DateTime?
+  nextDueAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TimelineEvent {
+  id          String   @id @default(cuid())
+  assetId     String
+  asset       Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  eventType   String   // installed, inspection, fault, maintenance, repair, replacement, calibration, shutdown, startup, note
+  title       String
+  description String?
+  performedBy String?
+  eventDate   DateTime @default(now())
+  relatedId   String?  // ID of related inspection/fault/workorder
+  relatedType String?  // inspection, fault, workorder
+  createdAt   DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String   // fault, pm_overdue, assignment, approval, system
+  isRead    Boolean  @default(false)
+  relatedId String?
+  relatedType String?
+  createdAt DateTime @default(now())
+}
