@@ -2,13 +2,14 @@ import { db } from '@/lib/db'
 import { NextResponse } from 'next/server'
 
 async function seedDatabase() {
-  // Check if data already exists - skip seeding if DB has data
-  const existingUsers = await db.user.count()
-  if (existingUsers > 0) {
-    return { success: true, message: 'دیتابیس قبلاً پر شده است', alreadySeeded: true }
-  }
+  try {
+    // Check if data already exists - skip seeding if DB has data
+    const existingUsers = await db.user.count()
+    if (existingUsers > 0) {
+      return { success: true, message: 'دیتابیس قبلاً پر شده است', alreadySeeded: true }
+    }
 
-  // Users
+    // Users
     const admin = await db.user.create({ data: { name: 'علی محمدی', email: 'admin@asset.ir', password: 'hashed1', phone: '۰۹۱۲۱۲۳۴۵۶۷', role: 'admin', avatar: null } })
     const manager = await db.user.create({ data: { name: 'رضا احمدی', email: 'manager@asset.ir', password: 'hashed2', phone: '۰۹۱۲۲۳۴۵۶۷۸', role: 'manager', avatar: null } })
     const supervisor = await db.user.create({ data: { name: 'حسین کریمی', email: 'supervisor@asset.ir', password: 'hashed3', phone: '۰۹۱۲۳۴۵۶۷۸۹', role: 'supervisor', avatar: null } })
@@ -133,13 +134,12 @@ export async function GET() {
   if (!result.success) {
     return NextResponse.json(result, { status: 500 })
   }
-  // If seeded successfully via GET, redirect to home with HTML response
   if (!result.alreadySeeded) {
     return new Response(`
       <html>
         <head><meta charset="utf-8"><title>راه‌اندازی دیتابیس</title></head>
         <body style="font-family: Vazirmatn, sans-serif; direction: rtl; text-align: center; padding-top: 100px; background: #0f172a; color: #e2e8f0;">
-          <h1 style="color: #14b8a6;">✅ دیتابیس با موفقیت پر شد!</h1>
+          <h1 style="color: #14b8a6;">دیتابیس با موفقیت پر شد!</h1>
           <p>داده‌های نمونه وارد شدند. در حال انتقال به داشبورد...</p>
           <script>setTimeout(() => window.location.href = '/', 2000)</script>
         </body>
