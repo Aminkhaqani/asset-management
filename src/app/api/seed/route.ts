@@ -1,15 +1,14 @@
 import { db } from '@/lib/db'
 import { NextResponse } from 'next/server'
 
-export async function POST() {
-  try {
-    // Check if data already exists - skip seeding if DB has data
-    const existingUsers = await db.user.count()
-    if (existingUsers > 0) {
-      return NextResponse.json({ success: true, message: 'دیتابیس قبلاً پر شده است', alreadySeeded: true })
-    }
+async function seedDatabase() {
+  // Check if data already exists - skip seeding if DB has data
+  const existingUsers = await db.user.count()
+  if (existingUsers > 0) {
+    return { success: true, message: 'دیتابیس قبلاً پر شده است', alreadySeeded: true }
+  }
 
-    // Users
+  // Users
     const admin = await db.user.create({ data: { name: 'علی محمدی', email: 'admin@asset.ir', password: 'hashed1', phone: '۰۹۱۲۱۲۳۴۵۶۷', role: 'admin', avatar: null } })
     const manager = await db.user.create({ data: { name: 'رضا احمدی', email: 'manager@asset.ir', password: 'hashed2', phone: '۰۹۱۲۲۳۴۵۶۷۸', role: 'manager', avatar: null } })
     const supervisor = await db.user.create({ data: { name: 'حسین کریمی', email: 'supervisor@asset.ir', password: 'hashed3', phone: '۰۹۱۲۳۴۵۶۷۸۹', role: 'supervisor', avatar: null } })
@@ -114,9 +113,38 @@ export async function POST() {
       db.notification.create({ data: { userId: admin.id, title: 'خرابی جدید', message: 'توقف آسانسور شماره ۲ با خطای E03', type: 'fault', relatedId: fault3.id, relatedType: 'fault' } }),
     ])
 
-    return NextResponse.json({ success: true, message: 'داده‌های نمونه با موفقیت ایجاد شدند' })
+    return { success: true, message: 'داده‌های نمونه با موفقیت ایجاد شدند' }
   } catch (error) {
     console.error('Seed error:', error)
-    return NextResponse.json({ success: false, error: String(error) }, { status: 500 })
+    return { success: false, error: String(error) }
   }
+}
+
+export async function POST() {
+  const result = await seedDatabase()
+  if (!result.success) {
+    return NextResponse.json(result, { status: 500 })
+  }
+  return NextResponse.json(result)
+}
+
+export async function GET() {
+  const result = await seedDatabase()
+  if (!result.success) {
+    return NextResponse.json(result, { status: 500 })
+  }
+  // If seeded successfully via GET, redirect to home with HTML response
+  if (!result.alreadySeeded) {
+    return new Response(`
+      <html>
+        <head><meta charset="utf-8"><title>راه‌اندازی دیتابیس</title></head>
+        <body style="font-family: Vazirmatn, sans-serif; direction: rtl; text-align: center; padding-top: 100px; background: #0f172a; color: #e2e8f0;">
+          <h1 style="color: #14b8a6;">✅ دیتابیس با موفقیت پر شد!</h1>
+          <p>داده‌های نمونه وارد شدند. در حال انتقال به داشبورد...</p>
+          <script>setTimeout(() => window.location.href = '/', 2000)</script>
+        </body>
+      </html>
+    `, { headers: { 'Content-Type': 'text/html; charset=utf-8' } })
+  }
+  return NextResponse.json(result)
 }

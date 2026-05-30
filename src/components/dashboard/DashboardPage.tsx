@@ -51,7 +51,18 @@ export function DashboardPage() {
             اتصال به دیتابیس برقرار نیست یا جداول ایجاد نشده‌اند. لطفاً مطمئن شوید که دیتابیس تنظیم شده است.
           </p>
           <button
-            onClick={() => window.location.href = '/api/seed'}
+            onClick={async () => {
+              try {
+                const res = await fetch('/api/seed', { method: 'POST' })
+                const data = await res.json()
+                if (data.success) {
+                  window.location.reload()
+                }
+              } catch (e) {
+                // Fallback to GET
+                window.location.href = '/api/seed'
+              }
+            }}
             className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm"
           >
             راه‌اندازی دیتابیس نمونه
