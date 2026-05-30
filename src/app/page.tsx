@@ -89,16 +89,46 @@ function AppContent() {
 }
 
 function SeedLoader() {
-  const [seeded, setSeeded] = useState(false)
+  const [status, setStatus] = useState<'setup' | 'seeding' | 'ready' | 'error'>('setup')
 
   useEffect(() => {
-    fetch('/api/seed', { method: 'POST' })
+    // Step 1: Setup database schema
+    fetch('/api/setup', { method: 'POST' })
       .then(r => r.json())
-      .then(() => setSeeded(true))
-      .catch(() => setSeeded(true))
+      .then((data) => {
+        if (data.success) {
+          // Step 2: Seed demo data
+          setStatus('seeding')
+          return fetch('/api/seed', { method: 'POST' })
+        }
+        throw new Error(data.error || 'Setup failed')
+      })
+      .then(r => r?.json())
+      .then((data) => {
+        if (data?.success || data?.message) {
+          setStatus('ready')
+        } else {
+          setStatus('error')
+        }
+      })
+      .catch(() => {
+        // Even on error, try to show the app
+        setStatus('ready')
+      })
   }, [])
 
-  if (!seeded) {
+  if (status === 'setup') {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-full border-4 border-teal-600 border-t-transparent animate-spin mx-auto mb-4" />
+          <p className="text-sm text-muted-foreground">در حال ایجاد جداول دیتابیس...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (status === 'seeding') {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
