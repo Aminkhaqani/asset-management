@@ -15,9 +15,12 @@ import { AlertTriangle } from 'lucide-react'
 export function DashboardPage() {
   const navigate = useAppStore((s) => s.navigate)
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['dashboard'],
-    queryFn: () => fetch('/api/dashboard').then(r => r.json()),
+    queryFn: () => fetch('/api/dashboard').then(r => {
+      if (!r.ok) throw new Error('Failed to load dashboard')
+      return r.json()
+    }),
   })
 
   if (isLoading) {
@@ -36,7 +39,27 @@ export function DashboardPage() {
     )
   }
 
-  if (!data) return null
+  if (error || !data?.stats) {
+    return (
+      <div className="p-4">
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-16 h-16 rounded-full bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center mb-4">
+            <AlertTriangle className="h-8 w-8 text-orange-500" />
+          </div>
+          <h2 className="text-lg font-semibold mb-2">خطا در بارگذاری داشبورد</h2>
+          <p className="text-sm text-muted-foreground mb-4 max-w-md">
+            اتصال به دیتابیس برقرار نیست یا جداول ایجاد نشده‌اند. لطفاً مطمئن شوید که دیتابیس تنظیم شده است.
+          </p>
+          <button
+            onClick={() => window.location.href = '/api/seed'}
+            className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm"
+          >
+            راه‌اندازی دیتابیس نمونه
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="p-4 space-y-4">

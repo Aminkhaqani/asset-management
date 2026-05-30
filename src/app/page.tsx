@@ -88,34 +88,10 @@ function AppContent() {
   )
 }
 
-function SeedLoader() {
-  const [status, setStatus] = useState<'seeding' | 'ready'>('seeding')
-
-  useEffect(() => {
-    fetch('/api/seed', { method: 'POST' })
-      .then(r => r.json())
-      .then(() => setStatus('ready'))
-      .catch(() => setStatus('ready'))
-  }, [])
-
-  if (status === 'seeding') {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="w-12 h-12 rounded-full border-4 border-teal-600 border-t-transparent animate-spin mx-auto mb-4" />
-          <p className="text-sm text-muted-foreground">در حال بارگذاری داده‌های نمونه...</p>
-        </div>
-      </div>
-    )
-  }
-
-  return <AppContent />
-}
-
 export default function Home() {
   return (
     <QueryClientProvider client={queryClient}>
-      <SeedLoader />
+      <AppContent />
     </QueryClientProvider>
   )
 }

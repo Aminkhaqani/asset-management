@@ -3,18 +3,11 @@ import { NextResponse } from 'next/server'
 
 export async function POST() {
   try {
-    // Clean existing data
-    await db.notification.deleteMany()
-    await db.timelineEvent.deleteMany()
-    await db.workOrder.deleteMany()
-    await db.fault.deleteMany()
-    await db.inspection.deleteMany()
-    await db.assetAttachment.deleteMany()
-    await db.checklist.deleteMany()
-    await db.asset.deleteMany()
-    await db.assetCategory.deleteMany()
-    await db.location.deleteMany()
-    await db.user.deleteMany()
+    // Check if data already exists - skip seeding if DB has data
+    const existingUsers = await db.user.count()
+    if (existingUsers > 0) {
+      return NextResponse.json({ success: true, message: 'دیتابیس قبلاً پر شده است', alreadySeeded: true })
+    }
 
     // Users
     const admin = await db.user.create({ data: { name: 'علی محمدی', email: 'admin@asset.ir', password: 'hashed1', phone: '۰۹۱۲۱۲۳۴۵۶۷', role: 'admin', avatar: null } })
