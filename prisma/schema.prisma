@@ -110,29 +110,26 @@ model Inspection {
   notes        String?
   photos       String?
   createdAt    DateTime @default(now())
-
-  timeline TimelineEvent[]
 }
 
 model Fault {
-  id          String    @id @default(cuid())
-  assetId     String
-  asset       Asset     @relation(fields: [assetId], references: [id])
+  id           String    @id @default(cuid())
+  assetId      String
+  asset        Asset     @relation(fields: [assetId], references: [id])
   reportedById String
-  reportedBy  User      @relation("FaultReporter", fields: [reportedById], references: [id])
-  faultType   String
-  priority    String    @default("medium")
-  status      String    @default("open")
-  description String
-  reportedAt  DateTime  @default(now())
-  resolvedAt  DateTime?
-  resolution  String?
-  photos      String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  reportedBy   User      @relation("FaultReporter", fields: [reportedById], references: [id])
+  faultType    String
+  priority     String    @default("medium")
+  status       String    @default("open")
+  description  String
+  reportedAt   DateTime  @default(now())
+  resolvedAt   DateTime?
+  resolution   String?
+  photos       String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   workOrders WorkOrder[]
-  timeline   TimelineEvent[]
 }
 
 model WorkOrder {
@@ -161,8 +158,6 @@ model WorkOrder {
   nextDueDate   DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-
-  timeline TimelineEvent[]
 }
 
 model Checklist {
@@ -192,10 +187,6 @@ model TimelineEvent {
   relatedId   String?
   relatedType String?
   createdAt   DateTime @default(now())
-
-  inspection Inspection? @relation(fields: [relatedId], references: [id])
-  fault      Fault?      @relation(fields: [relatedId], references: [id])
-  workOrder  WorkOrder?  @relation(fields: [relatedId], references: [id])
 }
 
 model Notification {
