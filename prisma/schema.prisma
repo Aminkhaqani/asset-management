@@ -79,6 +79,7 @@ model Asset {
   timeline    TimelineEvent[]
   attachments AssetAttachment[]
   checklists  Checklist[]
+  pmPlans     PreventiveMaintenancePlan[]
 }
 
 model AssetAttachment {
@@ -156,8 +157,33 @@ model WorkOrder {
   notes         String?
   recurrence    String?
   nextDueDate   DateTime?
+  repairType    String    @default("internal")
+  workshopId    String?
+  workshop      Workshop? @relation(fields: [workshopId], references: [id])
+  sentToWorkshopAt DateTime?
+  returnedFromWorkshopAt DateTime?
+  workshopCost  Float?
+  workshopInvoiceNumber String?
+  pmPlanId      String?
+  pmPlan        PreventiveMaintenancePlan? @relation(fields: [pmPlanId], references: [id])
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+}
+
+model Workshop {
+  id            String   @id @default(cuid())
+  name          String
+  code          String   @unique
+  phone         String?
+  address       String?
+  contactPerson String?
+  specialty     String?
+  isActive      Boolean  @default(true)
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  workOrders    WorkOrder[]
 }
 
 model Checklist {
@@ -199,4 +225,33 @@ model Notification {
   relatedId   String?
   relatedType String?
   createdAt   DateTime @default(now())
+}
+
+model PreventiveMaintenancePlan {
+  id                    String    @id @default(cuid())
+  assetId               String
+  asset                 Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  title                 String
+  description           String?
+  isActive              Boolean   @default(true)
+  // time-based trigger
+  intervalDays          Int?
+  lastServiceAt         DateTime?
+  nextDueAt             DateTime?
+  // running-hours-based trigger
+  intervalRunningHours  Float?
+  lastServiceHours      Float?
+  nextDueRunningHours   Float?
+  // generation control
+  leadTimeDays          Int       @default(3)
+  autoCreateWorkOrder   Boolean   @default(true)
+  lastGeneratedAt       DateTime?
+  lastGeneratedWorkOrderId String?
+  priority              String    @default("medium")
+  checklistTemplate     String?
+  notes                 String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  workOrders WorkOrder[]
 }

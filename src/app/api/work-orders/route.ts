@@ -19,6 +19,7 @@ export async function GET(request: Request) {
         asset: { select: { nameFa: true, assetCode: true } },
         assignedTo: { select: { name: true } },
         fault: { select: { id: true, faultType: true, priority: true } },
+        workshop: { select: { id: true, name: true, code: true, phone: true } },
       },
       orderBy: { createdAt: 'desc' },
       take: 50,

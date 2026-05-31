@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
+import { repairTypeLabels } from '@/lib/persian'
 
 interface WorkOrderFormProps {
   type: 'preventive' | 'corrective'
@@ -25,6 +26,10 @@ export function WorkOrderForm({ type, onClose }: WorkOrderFormProps) {
     scheduledDate: '',
     recurrence: '',
     notes: '',
+    repairType: 'internal',
+    workshopId: '',
+    workshopCost: '',
+    workshopInvoiceNumber: '',
   })
 
   const { data: assets = [] } = useQuery({
@@ -41,6 +46,12 @@ export function WorkOrderForm({ type, onClose }: WorkOrderFormProps) {
     queryKey: ['faults-open'],
     queryFn: () => fetch('/api/faults?status=open').then(r => r.json()),
     enabled: type === 'corrective',
+  })
+
+  const { data: workshops = [] } = useQuery({
+    queryKey: ['workshops-active'],
+    queryFn: () => fetch('/api/workshops?isActive=true').then(r => r.json()),
+    enabled: form.repairType === 'external',
   })
 
   const mutation = useMutation({
@@ -63,6 +74,7 @@ export function WorkOrderForm({ type, onClose }: WorkOrderFormProps) {
       priority: form.priority,
       assignedToId: form.assignedToId || undefined,
       notes: form.notes,
+      repairType: form.repairType,
     }
     if (form.scheduledDate) {
       data.scheduledDate = new Date(form.scheduledDate).toISOString()
@@ -70,6 +82,14 @@ export function WorkOrderForm({ type, onClose }: WorkOrderFormProps) {
     if (type === 'preventive' && form.recurrence) {
       data.recurrence = form.recurrence
       data.nextDueDate = data.scheduledDate
+    }
+    if (form.repairType === 'external') {
+      data.workshopId = form.workshopId || undefined
+      data.workshopCost = form.workshopCost ? parseFloat(form.workshopCost) : undefined
+      data.workshopInvoiceNumber = form.workshopInvoiceNumber || undefined
+      if (form.workshopId) {
+        data.sentToWorkshopAt = new Date().toISOString()
+      }
     }
     mutation.mutate(data)
   }
@@ -124,6 +144,58 @@ export function WorkOrderForm({ type, onClose }: WorkOrderFormProps) {
           <Input type="date" value={form.scheduledDate} onChange={(e) => setForm({ ...form, scheduledDate: e.target.value })} dir="ltr" />
         </div>
       </div>
+
+      {/* Repair Type Selection */}
+      <div>
+        <Label>نوع تعمیر</Label>
+        <Select value={form.repairType} onValueChange={(v) => setForm({ ...form, repairType: v, workshopId: '' })}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {Object.entries(repairTypeLabels).map(([key, label]) => (
+              <SelectItem key={key} value={key}>{label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Workshop Fields - only shown when repairType is external */}
+      {form.repairType === 'external' && (
+        <div className="space-y-4 p-3 rounded-lg border border-teal-200 dark:border-teal-800 bg-teal-50/50 dark:bg-teal-950/20">
+          <p className="text-sm font-medium text-teal-700 dark:text-teal-300">اطلاعات تعمیرگاه خارجی</p>
+          <div>
+            <Label>تعمیرگاه *</Label>
+            <Select value={form.workshopId} onValueChange={(v) => setForm({ ...form, workshopId: v })}>
+              <SelectTrigger><SelectValue placeholder="انتخاب تعمیرگاه" /></SelectTrigger>
+              <SelectContent>
+                {workshops.map((ws: any) => (
+                  <SelectItem key={ws.id} value={ws.id}>{ws.name} ({ws.code})</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>هزینه تعمیرگاه</Label>
+              <Input
+                type="number"
+                value={form.workshopCost}
+                onChange={(e) => setForm({ ...form, workshopCost: e.target.value })}
+                placeholder="مبلغ به ریال"
+                dir="ltr"
+              />
+            </div>
+            <div>
+              <Label>شماره فاکتور</Label>
+              <Input
+                value={form.workshopInvoiceNumber}
+                onChange={(e) => setForm({ ...form, workshopInvoiceNumber: e.target.value })}
+                placeholder="شماره فاکتور"
+                dir="ltr"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {type === 'preventive' && (
         <div>

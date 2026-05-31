@@ -8,6 +8,7 @@ import {
   Wrench,
   AlertTriangle,
   CheckSquare,
+  Building2,
   Bell,
   Users,
   Settings,
@@ -24,6 +25,7 @@ const mainMenuItems: { id: PageId; label: string; icon: React.ElementType }[] = 
   { id: 'assets', label: 'دارایی‌ها', icon: HardHat },
   { id: 'inspections', label: 'بازدیدها', icon: ClipboardCheck },
   { id: 'maintenance', label: 'نگهداری و تعمیرات', icon: Wrench },
+  { id: 'workshops', label: 'تعمیرگاه‌ها', icon: Building2 },
   { id: 'faults', label: 'خرابی‌ها', icon: AlertTriangle },
   { id: 'checklists', label: 'چک‌لیست‌ها', icon: CheckSquare },
   { id: 'scan-qr', label: 'اسکن QR', icon: ScanLine },
@@ -49,6 +51,7 @@ export function Sidebar() {
     if (id === 'maintenance' && (currentPage === 'work-order-detail' || currentPage === 'work-order-form')) return true
     if (id === 'faults' && (currentPage === 'fault-detail' || currentPage === 'fault-form')) return true
     if (id === 'checklists' && currentPage === 'checklist-detail') return true
+    if (id === 'workshops') return currentPage === 'workshops'
     return currentPage === id
   }
 

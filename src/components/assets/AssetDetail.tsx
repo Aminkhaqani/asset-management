@@ -11,10 +11,11 @@ import { PersianDate } from '@/components/shared/PersianDate'
 import { toPersianNumber, shiftLabels, faultTypeLabels, statusLabels, roleLabels } from '@/lib/persian'
 import { 
   ArrowRight, MapPin, Tag, Calendar, QrCode, FileText, Clock, 
-  AlertTriangle, Wrench, ClipboardCheck, HardHat, Activity 
+  AlertTriangle, Wrench, ClipboardCheck, HardHat, Activity, Settings
 } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { PMPlansList } from '@/components/maintenance/PMPlansList'
 
 export function AssetDetail() {
   const { selectedAssetId, navigate } = useAppStore()
@@ -155,6 +156,10 @@ export function AssetDetail() {
             <Wrench className="h-3.5 w-3.5 ml-1" />
             دستورات
           </TabsTrigger>
+          <TabsTrigger value="pm" className="flex-1 text-xs">
+            <Settings className="h-3.5 w-3.5 ml-1" />
+            PM دوره‌ای
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="timeline" className="mt-3">
@@ -264,6 +269,10 @@ export function AssetDetail() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="pm" className="mt-3">
+          <PMPlansList assetId={asset.id} showGenerate={false} />
         </TabsContent>
       </Tabs>
 

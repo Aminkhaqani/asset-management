@@ -1,31 +1,98 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { useAppStore } from '@/store/useAppStore'
 import { Card, CardContent } from '@/components/ui/card'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { PersianDate } from '@/components/shared/PersianDate'
 import { shiftLabels } from '@/lib/persian'
 import { Button } from '@/components/ui/button'
-import { Plus, ClipboardCheck } from 'lucide-react'
+import { Plus, ClipboardCheck, ArrowRight } from 'lucide-react'
 import { InspectionForm } from './InspectionForm'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { AssetQRScanner } from '@/components/shared/AssetQRScanner'
 import { useState } from 'react'
 
+type InspectionStep = 'list' | 'scan' | 'form'
+
 export function InspectionList() {
-  const navigate = useAppStore((s) => s.navigate)
-  const [showForm, setShowForm] = useState(false)
+  const [step, setStep] = useState<InspectionStep>('list')
+  const [scannedAsset, setScannedAsset] = useState<any>(null)
 
   const { data: inspections = [], isLoading } = useQuery({
     queryKey: ['inspections'],
     queryFn: () => fetch('/api/inspections').then(r => r.json()),
   })
 
+  const handleNewInspection = () => {
+    setScannedAsset(null)
+    setStep('scan')
+  }
+
+  const handleAssetFound = (asset: any) => {
+    setScannedAsset(asset)
+  }
+
+  const handleContinueToForm = () => {
+    setStep('form')
+  }
+
+  const handleBack = () => {
+    if (step === 'form') {
+      setStep('scan')
+    } else if (step === 'scan') {
+      setStep('list')
+      setScannedAsset(null)
+    }
+  }
+
+  const handleClose = () => {
+    setStep('list')
+    setScannedAsset(null)
+  }
+
+  // Scan step
+  if (step === 'scan') {
+    return (
+      <div className="p-4 space-y-4">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={handleBack}>
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+          <h2 className="text-lg font-bold">اسکن تجهیز</h2>
+        </div>
+
+        <AssetQRScanner
+          onAssetFound={handleAssetFound}
+          onContinue={handleContinueToForm}
+        />
+      </div>
+    )
+  }
+
+  // Form step
+  if (step === 'form' && scannedAsset) {
+    return (
+      <div className="p-4 space-y-4">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={handleBack}>
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+          <h2 className="text-lg font-bold">ثبت بازدید</h2>
+        </div>
+
+        <InspectionForm
+          asset={scannedAsset}
+          onClose={handleClose}
+        />
+      </div>
+    )
+  }
+
+  // List step (default)
   return (
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold">بازدیدها</h2>
-        <Button onClick={() => setShowForm(true)}>
+        <Button onClick={handleNewInspection}>
           <Plus className="h-4 w-4 ml-1" />
           بازدید جدید
         </Button>
@@ -66,17 +133,6 @@ export function InspectionList() {
           ))}
         </div>
       )}
-
-      <Sheet open={showForm} onOpenChange={setShowForm}>
-        <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>ثبت بازدید جدید</SheetTitle>
-          </SheetHeader>
-          <div className="mt-4">
-            <InspectionForm onClose={() => setShowForm(false)} />
-          </div>
-        </SheetContent>
-      </Sheet>
     </div>
   )
 }

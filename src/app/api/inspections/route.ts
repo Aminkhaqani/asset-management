@@ -25,6 +25,18 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
+
+    // Validate assetId is provided
+    if (!body.assetId) {
+      return NextResponse.json({ error: 'شناسه تجهیز الزامی است' }, { status: 400 })
+    }
+
+    // Verify the asset exists
+    const asset = await db.asset.findUnique({ where: { id: body.assetId } })
+    if (!asset) {
+      return NextResponse.json({ error: 'تجهیز مورد نظر یافت نشد' }, { status: 404 })
+    }
+
     const inspection = await db.inspection.create({ data: body })
     
     // Create timeline event

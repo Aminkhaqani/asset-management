@@ -15,6 +15,7 @@ import { FaultList } from '@/components/faults/FaultList'
 import { FaultDetail } from '@/components/faults/FaultDetail'
 import { ChecklistList } from '@/components/checklists/ChecklistList'
 import { ChecklistDetail } from '@/components/checklists/ChecklistDetail'
+import { WorkshopList } from '@/components/workshops/WorkshopList'
 import { NotificationList } from '@/components/notifications/NotificationList'
 import { UserList } from '@/components/users/UserList'
 import { SettingsPage } from '@/components/settings/SettingsPage'
@@ -60,6 +61,8 @@ function AppContent() {
         return <ChecklistList />
       case 'checklist-detail':
         return <ChecklistDetail />
+      case 'workshops':
+        return <WorkshopList />
       case 'notifications':
         return <NotificationList />
       case 'users':

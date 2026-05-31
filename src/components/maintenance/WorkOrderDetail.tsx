@@ -1,23 +1,39 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAppStore } from '@/store/useAppStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { PriorityBadge } from '@/components/shared/PriorityBadge'
 import { PersianDate } from '@/components/shared/PersianDate'
-import { toPersianNumber, recurrenceLabels, roleLabels, statusLabels } from '@/lib/persian'
-import { ArrowRight, Wrench, User, Calendar, Clock, CheckCircle, AlertTriangle } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { toPersianNumber, recurrenceLabels, roleLabels, statusLabels, repairTypeLabels, workshopSpecialtyLabels } from '@/lib/persian'
+import { ArrowRight, Wrench, User, Calendar, Clock, CheckCircle, AlertTriangle, Building2, Phone, Receipt, DollarSign, Send, ArrowLeftRight } from 'lucide-react'
+import { toast } from 'sonner'
 
 export function WorkOrderDetail() {
   const { selectedWorkOrderId, navigate } = useAppStore()
+  const queryClient = useQueryClient()
 
   const { data: wo, isLoading } = useQuery({
     queryKey: ['work-order', selectedWorkOrderId],
     queryFn: () => fetch(`/api/work-orders/${selectedWorkOrderId}`).then(r => r.json()),
     enabled: !!selectedWorkOrderId,
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: (data: any) =>
+      fetch(`/api/work-orders/${selectedWorkOrderId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      }).then(r => r.json()),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['work-order', selectedWorkOrderId] })
+      toast.success('بروزرسانی با موفقیت انجام شد')
+    },
+    onError: () => toast.error('خطا در بروزرسانی'),
   })
 
   if (isLoading) return <div className="p-4 space-y-4"><div className="h-40 rounded-xl bg-muted animate-pulse" /></div>
@@ -39,6 +55,12 @@ export function WorkOrderDetail() {
   ]
 
   const currentStepIdx = workflowSteps.findIndex(s => s.key === wo.status)
+
+  const handleReturnFromWorkshop = () => {
+    updateMutation.mutate({
+      returnedFromWorkshopAt: new Date().toISOString(),
+    })
+  }
 
   return (
     <div className="p-4 space-y-4">
@@ -64,6 +86,15 @@ export function WorkOrderDetail() {
               <span className="text-sm font-medium">{wo.type === 'preventive' ? 'نگهداری پیشگیرانه' : 'تعمیرات اصلاحی'}</span>
             </div>
             <StatusBadge status={wo.status} />
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Wrench className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">نوع تعمیر:</span>
+              <Badge variant={wo.repairType === 'external' ? 'default' : 'secondary'} className="text-xs">
+                {repairTypeLabels[wo.repairType] || 'داخلی'}
+              </Badge>
+            </div>
           </div>
           
           {/* Workflow Progress */}
@@ -133,6 +164,89 @@ export function WorkOrderDetail() {
           )}
         </CardContent>
       </Card>
+
+      {/* Workshop Info - only shown for external repairs */}
+      {wo.repairType === 'external' && wo.workshop && (
+        <Card className="border-0 shadow-sm border-r-4 border-r-teal-500">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-teal-600" />
+              اطلاعات تعمیرگاه خارجی
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="flex items-center gap-2 text-sm">
+              <Building2 className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground">نام تعمیرگاه:</span>
+              <span className="font-medium">{wo.workshop.name}</span>
+              <span className="text-xs text-muted-foreground">({toPersianNumber(wo.workshop.code)})</span>
+            </div>
+            {wo.workshop.contactPerson && (
+              <div className="flex items-center gap-2 text-sm">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">شخص تماس:</span>
+                <span className="font-medium">{wo.workshop.contactPerson}</span>
+              </div>
+            )}
+            {wo.workshop.phone && (
+              <div className="flex items-center gap-2 text-sm">
+                <Phone className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">تلفن:</span>
+                <span className="font-medium" dir="ltr">{wo.workshop.phone}</span>
+              </div>
+            )}
+            {wo.workshop.specialty && (
+              <div className="flex items-center gap-2 text-sm">
+                <Wrench className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">تخصص:</span>
+                <span className="font-medium">{workshopSpecialtyLabels[wo.workshop.specialty] || wo.workshop.specialty}</span>
+              </div>
+            )}
+            {wo.sentToWorkshopAt && (
+              <div className="flex items-center gap-2 text-sm">
+                <Send className="h-4 w-4 text-orange-500" />
+                <span className="text-muted-foreground">ارسال به تعمیرگاه:</span>
+                <PersianDate date={wo.sentToWorkshopAt} time />
+              </div>
+            )}
+            {wo.returnedFromWorkshopAt && (
+              <div className="flex items-center gap-2 text-sm">
+                <ArrowLeftRight className="h-4 w-4 text-emerald-500" />
+                <span className="text-muted-foreground">بازگشت از تعمیرگاه:</span>
+                <PersianDate date={wo.returnedFromWorkshopAt} time />
+              </div>
+            )}
+            {wo.workshopCost != null && (
+              <div className="flex items-center gap-2 text-sm">
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">هزینه:</span>
+                <span className="font-medium">{toPersianNumber(wo.workshopCost.toLocaleString())} ریال</span>
+              </div>
+            )}
+            {wo.workshopInvoiceNumber && (
+              <div className="flex items-center gap-2 text-sm">
+                <Receipt className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">شماره فاکتور:</span>
+                <span className="font-medium" dir="ltr">{wo.workshopInvoiceNumber}</span>
+              </div>
+            )}
+            {wo.sentToWorkshopAt && !wo.returnedFromWorkshopAt && (
+              <div className="mt-3 pt-3 border-t">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleReturnFromWorkshop}
+                  disabled={updateMutation.isPending}
+                >
+                  <ArrowLeftRight className="h-4 w-4 ml-1" />
+                  ثبت بازگشت از تعمیرگاه
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Parts Consumed */}
       {parts.length > 0 && (

@@ -8,7 +8,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Card, CardContent } from '@/components/ui/card'
+import { StatusBadge } from '@/components/shared/StatusBadge'
+import { CriticalityBadge } from '@/components/shared/PriorityBadge'
 import { toast } from 'sonner'
+import { CheckCircle2 } from 'lucide-react'
 
 const faultAlarmOptions = [
   { id: 'high_temp', label: 'دمای بالا' },
@@ -21,10 +25,15 @@ const faultAlarmOptions = [
   { id: 'phase_loss', label: 'قطع فاز' },
 ]
 
-export function InspectionForm({ onClose }: { onClose: () => void }) {
+interface InspectionFormProps {
+  asset: any
+  onClose: () => void
+}
+
+export function InspectionForm({ asset, onClose }: InspectionFormProps) {
   const queryClient = useQueryClient()
   const [form, setForm] = useState({
-    assetId: '',
+    assetId: asset.id,
     shift: 'morning',
     status: 'normal',
     runningHours: '',
@@ -37,18 +46,16 @@ export function InspectionForm({ onClose }: { onClose: () => void }) {
     pressure: '',
   })
 
-  const { data: assets = [] } = useQuery({
-    queryKey: ['assets'],
-    queryFn: () => fetch('/api/assets').then(r => r.json()),
-  })
-
   const { data: users = [] } = useQuery({
     queryKey: ['users'],
     queryFn: () => fetch('/api/users').then(r => r.json()),
   })
 
   const mutation = useMutation({
-    mutationFn: (data: any) => fetch('/api/inspections', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then(r => r.json()),
+    mutationFn: (data: any) => fetch('/api/inspections', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then(r => {
+      if (!r.ok) throw new Error('Failed')
+      return r.json()
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inspections'] })
       toast.success('بازدید با موفقیت ثبت شد')
@@ -87,17 +94,46 @@ export function InspectionForm({ onClose }: { onClose: () => void }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label>تجهیز *</Label>
-        <Select value={form.assetId} onValueChange={(v) => setForm({ ...form, assetId: v })} required>
-          <SelectTrigger><SelectValue placeholder="انتخاب تجهیز" /></SelectTrigger>
-          <SelectContent>
-            {assets.map((a: any) => (
-              <SelectItem key={a.id} value={a.id}>{a.assetCode} - {a.nameFa}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {/* Read-only scanned asset info card */}
+      <Card className="border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30">
+        <CardContent className="p-4 space-y-2">
+          <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 mb-2">
+            <CheckCircle2 className="h-4 w-4" />
+            <span className="text-xs font-medium">تجهیز اسکن‌شده</span>
+          </div>
+
+          <div className="bg-background rounded-lg p-3 space-y-2">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="font-medium text-sm">{asset.nameFa}</p>
+                <p className="text-xs text-muted-foreground mt-0.5" dir="ltr">
+                  {asset.assetCode} | {asset.qrCode}
+                </p>
+              </div>
+              <StatusBadge status={asset.status} />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t">
+              <div>
+                <span className="text-muted-foreground">دسته‌بندی: </span>
+                <span className="font-medium">{asset.category?.nameFa || '—'}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">مکان: </span>
+                <span className="font-medium">{asset.location?.name || '—'}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">اهمیت: </span>
+                <CriticalityBadge criticality={asset.criticality} />
+              </div>
+              <div>
+                <span className="text-muted-foreground">مدل: </span>
+                <span className="font-medium">{asset.model || '—'}</span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
@@ -126,7 +162,7 @@ export function InspectionForm({ onClose }: { onClose: () => void }) {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label>دمار (°C)</Label>
+          <Label>دمای (°C)</Label>
           <Input type="number" value={form.temperature} onChange={(e) => setForm({ ...form, temperature: e.target.value })} placeholder="دمای فعلی" dir="ltr" />
         </div>
         <div>
@@ -196,7 +232,7 @@ export function InspectionForm({ onClose }: { onClose: () => void }) {
 
       <div className="flex gap-2 justify-end">
         <Button type="button" variant="outline" onClick={onClose}>انصراف</Button>
-        <Button type="submit" disabled={mutation.isPending}>
+        <Button type="submit" disabled={mutation.isPending || !form.assetId}>
           {mutation.isPending ? 'در حال ثبت...' : 'ثبت بازدید'}
         </Button>
       </div>

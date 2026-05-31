@@ -15,6 +15,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         workOrders: { include: { assignedTo: true }, orderBy: { createdAt: 'desc' }, take: 10 },
         timeline: { orderBy: { eventDate: 'desc' }, take: 20 },
         checklists: { where: { isActive: true } },
+        pmPlans: { where: { isActive: true }, orderBy: { createdAt: 'desc' } },
       },
     })
     if (!asset) return NextResponse.json({ error: 'Asset not found' }, { status: 404 })

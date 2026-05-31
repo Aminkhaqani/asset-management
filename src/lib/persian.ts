@@ -137,3 +137,20 @@ export const notificationTypeLabels: Record<string, string> = {
   approval: 'تأیید',
   system: 'سیستم',
 }
+
+export const repairTypeLabels: Record<string, string> = {
+  internal: 'داخلی',
+  external: 'خارجی (تعمیرگاه)',
+}
+
+export const workshopSpecialtyLabels: Record<string, string> = {
+  chiller: 'چیلر',
+  elevator: 'آسانسور',
+  electrical: 'برق',
+  hvac: 'تهویه مطبوع',
+  plumbing: 'تاسیسات آب',
+  fire: 'ایمنی و آتش‌نشانی',
+  generator: 'ژنراتور',
+  bms: 'سیستم مدیریت ساختمان',
+  other: 'سایر',
+}
