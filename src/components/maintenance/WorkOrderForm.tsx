@@ -95,15 +95,15 @@ export function WorkOrderForm({ type, onClose }: WorkOrderFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label>عنوان دستور کار *</Label>
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="space-y-1.5">
+        <Label className="text-sm font-medium">عنوان دستور کار *</Label>
         <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="عنوان دستور کار" required />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label>تجهیز *</Label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">تجهیز *</Label>
           <Select value={form.assetId} onValueChange={(v) => setForm({ ...form, assetId: v })} required>
             <SelectTrigger><SelectValue placeholder="انتخاب تجهیز" /></SelectTrigger>
             <SelectContent>
@@ -113,8 +113,8 @@ export function WorkOrderForm({ type, onClose }: WorkOrderFormProps) {
             </SelectContent>
           </Select>
         </div>
-        <div>
-          <Label>اولویت</Label>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">اولویت</Label>
           <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -127,9 +127,9 @@ export function WorkOrderForm({ type, onClose }: WorkOrderFormProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label>تکنسین مسئول</Label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">تکنسین مسئول</Label>
           <Select value={form.assignedToId} onValueChange={(v) => setForm({ ...form, assignedToId: v })}>
             <SelectTrigger><SelectValue placeholder="انتخاب تکنسین" /></SelectTrigger>
             <SelectContent>
@@ -139,15 +139,15 @@ export function WorkOrderForm({ type, onClose }: WorkOrderFormProps) {
             </SelectContent>
           </Select>
         </div>
-        <div>
-          <Label>تاریخ برنامه‌ریزی</Label>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">تاریخ برنامه‌ریزی</Label>
           <Input type="date" value={form.scheduledDate} onChange={(e) => setForm({ ...form, scheduledDate: e.target.value })} dir="ltr" />
         </div>
       </div>
 
       {/* Repair Type Selection */}
-      <div>
-        <Label>نوع تعمیر</Label>
+      <div className="space-y-1.5">
+        <Label className="text-sm font-medium">نوع تعمیر</Label>
         <Select value={form.repairType} onValueChange={(v) => setForm({ ...form, repairType: v, workshopId: '' })}>
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
@@ -160,10 +160,10 @@ export function WorkOrderForm({ type, onClose }: WorkOrderFormProps) {
 
       {/* Workshop Fields - only shown when repairType is external */}
       {form.repairType === 'external' && (
-        <div className="space-y-4 p-3 rounded-lg border border-teal-200 dark:border-teal-800 bg-teal-50/50 dark:bg-teal-950/20">
+        <div className="space-y-4 p-4 rounded-xl border border-teal-200 dark:border-teal-800 bg-teal-50/50 dark:bg-teal-950/20">
           <p className="text-sm font-medium text-teal-700 dark:text-teal-300">اطلاعات تعمیرگاه خارجی</p>
-          <div>
-            <Label>تعمیرگاه *</Label>
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">تعمیرگاه *</Label>
             <Select value={form.workshopId} onValueChange={(v) => setForm({ ...form, workshopId: v })}>
               <SelectTrigger><SelectValue placeholder="انتخاب تعمیرگاه" /></SelectTrigger>
               <SelectContent>
@@ -173,9 +173,9 @@ export function WorkOrderForm({ type, onClose }: WorkOrderFormProps) {
               </SelectContent>
             </Select>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>هزینه تعمیرگاه</Label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">هزینه تعمیرگاه</Label>
               <Input
                 type="number"
                 value={form.workshopCost}
@@ -184,8 +184,8 @@ export function WorkOrderForm({ type, onClose }: WorkOrderFormProps) {
                 dir="ltr"
               />
             </div>
-            <div>
-              <Label>شماره فاکتور</Label>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">شماره فاکتور</Label>
               <Input
                 value={form.workshopInvoiceNumber}
                 onChange={(e) => setForm({ ...form, workshopInvoiceNumber: e.target.value })}
@@ -198,8 +198,8 @@ export function WorkOrderForm({ type, onClose }: WorkOrderFormProps) {
       )}
 
       {type === 'preventive' && (
-        <div>
-          <Label>دوره تکرار</Label>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">دوره تکرار</Label>
           <Select value={form.recurrence} onValueChange={(v) => setForm({ ...form, recurrence: v })}>
             <SelectTrigger><SelectValue placeholder="بدون تکرار" /></SelectTrigger>
             <SelectContent>
@@ -213,17 +213,17 @@ export function WorkOrderForm({ type, onClose }: WorkOrderFormProps) {
         </div>
       )}
 
-      <div>
-        <Label>شرح کار</Label>
+      <div className="space-y-1.5">
+        <Label className="text-sm font-medium">شرح کار</Label>
         <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="شرح دستور کار..." />
       </div>
 
-      <div>
-        <Label>توضیحات</Label>
+      <div className="space-y-1.5">
+        <Label className="text-sm font-medium">توضیحات</Label>
         <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="توضیحات اضافی..." />
       </div>
 
-      <div className="flex gap-2 justify-end">
+      <div className="flex gap-3 justify-end pt-2 border-t mt-4">
         <Button type="button" variant="outline" onClick={onClose}>انصراف</Button>
         <Button type="submit" disabled={mutation.isPending}>
           {mutation.isPending ? 'در حال ایجاد...' : 'ایجاد دستور کار'}

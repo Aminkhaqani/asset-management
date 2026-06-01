@@ -328,14 +328,15 @@ export function WorkshopList() {
 
       {/* Add/Edit Form Sheet */}
       <Sheet open={showForm} onOpenChange={(open) => { if (!open) closeForm() }}>
-        <SheetContent side="bottom" className="h-[80vh] overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>{editingWorkshop ? 'ویرایش تعمیرگاه' : 'افزودن تعمیرگاه جدید'}</SheetTitle>
+        <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto">
+          <SheetHeader className="px-5 pt-2 pb-1">
+            <SheetTitle className="text-base">{editingWorkshop ? 'ویرایش تعمیرگاه' : 'افزودن تعمیرگاه جدید'}</SheetTitle>
           </SheetHeader>
-          <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>نام تعمیرگاه *</Label>
+          <div className="px-5 pb-6 overflow-y-auto flex-1">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+              <div className="space-y-1.5">
+                <Label className="text-sm font-medium">نام تعمیرگاه *</Label>
                 <Input
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -343,8 +344,8 @@ export function WorkshopList() {
                   required
                 />
               </div>
-              <div>
-                <Label>کد تعمیرگاه *</Label>
+              <div className="space-y-1.5">
+                <Label className="text-sm font-medium">کد تعمیرگاه *</Label>
                 <Input
                   value={form.code}
                   onChange={(e) => setForm({ ...form, code: e.target.value })}
@@ -355,17 +356,17 @@ export function WorkshopList() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>شخص تماس</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+              <div className="space-y-1.5">
+                <Label className="text-sm font-medium">شخص تماس</Label>
                 <Input
                   value={form.contactPerson}
                   onChange={(e) => setForm({ ...form, contactPerson: e.target.value })}
                   placeholder="نام شخص تماس"
                 />
               </div>
-              <div>
-                <Label>شماره تماس</Label>
+              <div className="space-y-1.5">
+                <Label className="text-sm font-medium">شماره تماس</Label>
                 <Input
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -375,8 +376,8 @@ export function WorkshopList() {
               </div>
             </div>
 
-            <div>
-              <Label>تخصص</Label>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">تخصص</Label>
               <Select value={form.specialty} onValueChange={(v) => setForm({ ...form, specialty: v === '__none__' ? '' : v })}>
                 <SelectTrigger><SelectValue placeholder="انتخاب تخصص" /></SelectTrigger>
                 <SelectContent>
@@ -388,8 +389,8 @@ export function WorkshopList() {
               </Select>
             </div>
 
-            <div>
-              <Label>آدرس</Label>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">آدرس</Label>
               <Textarea
                 value={form.address}
                 onChange={(e) => setForm({ ...form, address: e.target.value })}
@@ -398,8 +399,8 @@ export function WorkshopList() {
               />
             </div>
 
-            <div>
-              <Label>توضیحات</Label>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">توضیحات</Label>
               <Textarea
                 value={form.notes}
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
@@ -413,10 +414,10 @@ export function WorkshopList() {
                 checked={form.isActive}
                 onCheckedChange={(checked) => setForm({ ...form, isActive: checked })}
               />
-              <Label>فعال</Label>
+              <Label className="text-sm font-medium">فعال</Label>
             </div>
 
-            <div className="flex gap-2 justify-end">
+            <div className="flex gap-3 justify-end pt-2 border-t mt-4">
               <Button type="button" variant="outline" onClick={closeForm}>انصراف</Button>
               <Button type="submit" disabled={isPending}>
                 {isPending && <Loader2 className="h-4 w-4 ml-1 animate-spin" />}
@@ -424,6 +425,7 @@ export function WorkshopList() {
               </Button>
             </div>
           </form>
+          </div>
         </SheetContent>
       </Sheet>
 

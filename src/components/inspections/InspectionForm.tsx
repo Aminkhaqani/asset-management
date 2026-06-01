@@ -93,7 +93,7 @@ export function InspectionForm({ asset, onClose }: InspectionFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {/* Read-only scanned asset info card */}
       <Card className="border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30">
         <CardContent className="p-4 space-y-2">
@@ -113,7 +113,7 @@ export function InspectionForm({ asset, onClose }: InspectionFormProps) {
               <StatusBadge status={asset.status} />
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1 border-t">
               <div>
                 <span className="text-muted-foreground">دسته‌بندی: </span>
                 <span className="font-medium">{asset.category?.nameFa || '—'}</span>
@@ -135,9 +135,9 @@ export function InspectionForm({ asset, onClose }: InspectionFormProps) {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label>شیفت</Label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">شیفت</Label>
           <Select value={form.shift} onValueChange={(v) => setForm({ ...form, shift: v })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -147,8 +147,8 @@ export function InspectionForm({ asset, onClose }: InspectionFormProps) {
             </SelectContent>
           </Select>
         </div>
-        <div>
-          <Label>وضعیت کلی</Label>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">وضعیت کلی</Label>
           <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -160,25 +160,25 @@ export function InspectionForm({ asset, onClose }: InspectionFormProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label>دمای (°C)</Label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">دمای (°C)</Label>
           <Input type="number" value={form.temperature} onChange={(e) => setForm({ ...form, temperature: e.target.value })} placeholder="دمای فعلی" dir="ltr" />
         </div>
-        <div>
-          <Label>فشار (bar)</Label>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">فشار (bar)</Label>
           <Input type="number" value={form.pressure} onChange={(e) => setForm({ ...form, pressure: e.target.value })} placeholder="فشار فعلی" dir="ltr" />
         </div>
       </div>
 
-      <div>
-        <Label>ساعت کارکرد</Label>
+      <div className="space-y-1.5">
+        <Label className="text-sm font-medium">ساعت کارکرد</Label>
         <Input type="number" value={form.runningHours} onChange={(e) => setForm({ ...form, runningHours: e.target.value })} placeholder="ساعت کارکرد" dir="ltr" />
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <Label>سطح روغن</Label>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-4">
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">سطح روغن</Label>
           <Select value={form.oilLevel} onValueChange={(v) => setForm({ ...form, oilLevel: v })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -188,8 +188,8 @@ export function InspectionForm({ asset, onClose }: InspectionFormProps) {
             </SelectContent>
           </Select>
         </div>
-        <div>
-          <Label>لرزش</Label>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">لرزش</Label>
           <Select value={form.vibration} onValueChange={(v) => setForm({ ...form, vibration: v })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -198,8 +198,8 @@ export function InspectionForm({ asset, onClose }: InspectionFormProps) {
             </SelectContent>
           </Select>
         </div>
-        <div>
-          <Label>صدا</Label>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">صدا</Label>
           <Select value={form.noise} onValueChange={(v) => setForm({ ...form, noise: v })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -210,9 +210,9 @@ export function InspectionForm({ asset, onClose }: InspectionFormProps) {
         </div>
       </div>
 
-      <div>
-        <Label>آلارم‌های خرابی</Label>
-        <div className="grid grid-cols-2 gap-2 mt-2">
+      <div className="space-y-1.5">
+        <Label className="text-sm font-medium">آلارم‌های خرابی</Label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
           {faultAlarmOptions.map(opt => (
             <label key={opt.id} className="flex items-center gap-2 text-sm cursor-pointer">
               <Checkbox
@@ -225,12 +225,12 @@ export function InspectionForm({ asset, onClose }: InspectionFormProps) {
         </div>
       </div>
 
-      <div>
-        <Label>توضیحات</Label>
+      <div className="space-y-1.5">
+        <Label className="text-sm font-medium">توضیحات</Label>
         <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="توضیحات بازدید..." />
       </div>
 
-      <div className="flex gap-2 justify-end">
+      <div className="flex gap-3 justify-end pt-2 border-t mt-4">
         <Button type="button" variant="outline" onClick={onClose}>انصراف</Button>
         <Button type="submit" disabled={mutation.isPending || !form.assetId}>
           {mutation.isPending ? 'در حال ثبت...' : 'ثبت بازدید'}

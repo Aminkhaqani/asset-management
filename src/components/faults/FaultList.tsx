@@ -77,11 +77,11 @@ export function FaultList() {
       )}
 
       <Sheet open={showForm} onOpenChange={setShowForm}>
-        <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>ثبت خرابی جدید</SheetTitle>
+        <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto">
+          <SheetHeader className="px-5 pt-2 pb-1">
+            <SheetTitle className="text-base">ثبت خرابی جدید</SheetTitle>
           </SheetHeader>
-          <div className="mt-4">
+          <div className="px-5 pb-6 overflow-y-auto flex-1">
             <FaultForm onClose={() => setShowForm(false)} />
           </div>
         </SheetContent>

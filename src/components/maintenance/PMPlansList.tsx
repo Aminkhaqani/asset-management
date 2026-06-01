@@ -162,9 +162,9 @@ function PMPlanForm({ plan, assetId, onClose }: { plan?: PMPlanWithStatus | null
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label>عنوان برنامه *</Label>
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="space-y-1.5">
+        <Label className="text-sm font-medium">عنوان برنامه *</Label>
         <Input
           value={form.title}
           onChange={(e) => setForm({ ...form, title: e.target.value })}
@@ -174,8 +174,8 @@ function PMPlanForm({ plan, assetId, onClose }: { plan?: PMPlanWithStatus | null
       </div>
 
       {!assetId && (
-        <div>
-          <Label>تجهیز *</Label>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">تجهیز *</Label>
           <Select value={form.assetId} onValueChange={(v) => setForm({ ...form, assetId: v })} required>
             <SelectTrigger><SelectValue placeholder="انتخاب تجهیز" /></SelectTrigger>
             <SelectContent>
@@ -187,9 +187,9 @@ function PMPlanForm({ plan, assetId, onClose }: { plan?: PMPlanWithStatus | null
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label>بازه زمانی (روز)</Label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">بازه زمانی (روز)</Label>
           <Input
             type="number"
             value={form.intervalDays}
@@ -198,8 +198,8 @@ function PMPlanForm({ plan, assetId, onClose }: { plan?: PMPlanWithStatus | null
             dir="ltr"
           />
         </div>
-        <div>
-          <Label>بازه ساعت کارکرد</Label>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">بازه ساعت کارکرد</Label>
           <Input
             type="number"
             step="0.1"
@@ -211,9 +211,9 @@ function PMPlanForm({ plan, assetId, onClose }: { plan?: PMPlanWithStatus | null
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label>آخرین سرویس</Label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">آخرین سرویس</Label>
           <Input
             type="date"
             value={form.lastServiceAt}
@@ -221,8 +221,8 @@ function PMPlanForm({ plan, assetId, onClose }: { plan?: PMPlanWithStatus | null
             dir="ltr"
           />
         </div>
-        <div>
-          <Label>ساعت کارکرد آخرین سرویس</Label>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">ساعت کارکرد آخرین سرویس</Label>
           <Input
             type="number"
             step="0.1"
@@ -234,9 +234,9 @@ function PMPlanForm({ plan, assetId, onClose }: { plan?: PMPlanWithStatus | null
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label>زمان هشدار قبلی (روز)</Label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">زمان هشدار قبلی (روز)</Label>
           <Input
             type="number"
             value={form.leadTimeDays}
@@ -244,8 +244,8 @@ function PMPlanForm({ plan, assetId, onClose }: { plan?: PMPlanWithStatus | null
             dir="ltr"
           />
         </div>
-        <div>
-          <Label>اولویت</Label>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">اولویت</Label>
           <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -257,10 +257,10 @@ function PMPlanForm({ plan, assetId, onClose }: { plan?: PMPlanWithStatus | null
         </div>
       </div>
 
-      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+      <div className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
         <div>
-          <Label>تولید خودکار دستور کار</Label>
-          <p className="text-xs text-muted-foreground">دستور کار PM به صورت خودکار تولید شود</p>
+          <Label className="text-sm font-medium">تولید خودکار دستور کار</Label>
+          <p className="text-xs text-muted-foreground mt-0.5">دستور کار PM به صورت خودکار تولید شود</p>
         </div>
         <Switch
           checked={form.autoCreateWorkOrder}
@@ -268,8 +268,8 @@ function PMPlanForm({ plan, assetId, onClose }: { plan?: PMPlanWithStatus | null
         />
       </div>
 
-      <div>
-        <Label>شرح</Label>
+      <div className="space-y-1.5">
+        <Label className="text-sm font-medium">شرح</Label>
         <Textarea
           value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -277,8 +277,8 @@ function PMPlanForm({ plan, assetId, onClose }: { plan?: PMPlanWithStatus | null
         />
       </div>
 
-      <div>
-        <Label>چک‌لیست</Label>
+      <div className="space-y-1.5">
+        <Label className="text-sm font-medium">چک‌لیست</Label>
         <Textarea
           value={form.checklistTemplate}
           onChange={(e) => setForm({ ...form, checklistTemplate: e.target.value })}
@@ -286,8 +286,8 @@ function PMPlanForm({ plan, assetId, onClose }: { plan?: PMPlanWithStatus | null
         />
       </div>
 
-      <div>
-        <Label>توضیحات</Label>
+      <div className="space-y-1.5">
+        <Label className="text-sm font-medium">توضیحات</Label>
         <Textarea
           value={form.notes}
           onChange={(e) => setForm({ ...form, notes: e.target.value })}
@@ -295,7 +295,7 @@ function PMPlanForm({ plan, assetId, onClose }: { plan?: PMPlanWithStatus | null
         />
       </div>
 
-      <div className="flex gap-2 justify-end">
+      <div className="flex gap-3 justify-end pt-2 border-t mt-4">
         <Button type="button" variant="outline" onClick={onClose}>انصراف</Button>
         <Button type="submit" disabled={mutation.isPending}>
           {mutation.isPending ? 'در حال ذخیره...' : isEdit ? 'بروزرسانی' : 'ایجاد برنامه'}
@@ -529,11 +529,11 @@ export function PMPlansList({ assetId, showGenerate = true }: PMPlansListProps) 
 
       {/* Add/Edit Sheet */}
       <Sheet open={showForm} onOpenChange={(open) => { setShowForm(open); if (!open) setEditingPlan(null) }}>
-        <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>{editingPlan ? 'ویرایش برنامه PM' : 'ایجاد برنامه PM جدید'}</SheetTitle>
+        <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto">
+          <SheetHeader className="px-5 pt-2 pb-1">
+            <SheetTitle className="text-base">{editingPlan ? 'ویرایش برنامه PM' : 'ایجاد برنامه PM جدید'}</SheetTitle>
           </SheetHeader>
-          <div className="mt-4">
+          <div className="px-5 pb-6 overflow-y-auto flex-1">
             <PMPlanForm
               plan={editingPlan}
               assetId={assetId}

@@ -48,9 +48,9 @@ export function FaultForm({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label>تجهیز *</Label>
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="space-y-1.5">
+        <Label className="text-sm font-medium">تجهیز *</Label>
         <Select value={form.assetId} onValueChange={(v) => setForm({ ...form, assetId: v })} required>
           <SelectTrigger><SelectValue placeholder="انتخاب تجهیز" /></SelectTrigger>
           <SelectContent>
@@ -61,9 +61,9 @@ export function FaultForm({ onClose }: { onClose: () => void }) {
         </Select>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label>نوع خرابی</Label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">نوع خرابی</Label>
           <Select value={form.faultType} onValueChange={(v) => setForm({ ...form, faultType: v })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -76,8 +76,8 @@ export function FaultForm({ onClose }: { onClose: () => void }) {
             </SelectContent>
           </Select>
         </div>
-        <div>
-          <Label>اولویت</Label>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">اولویت</Label>
           <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -90,12 +90,12 @@ export function FaultForm({ onClose }: { onClose: () => void }) {
         </div>
       </div>
 
-      <div>
-        <Label>شرح خرابی *</Label>
+      <div className="space-y-1.5">
+        <Label className="text-sm font-medium">شرح خرابی *</Label>
         <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="شرح خرابی..." required rows={4} />
       </div>
 
-      <div className="flex gap-2 justify-end">
+      <div className="flex gap-3 justify-end pt-2 border-t mt-4">
         <Button type="button" variant="outline" onClick={onClose}>انصراف</Button>
         <Button type="submit" disabled={mutation.isPending}>
           {mutation.isPending ? 'در حال ثبت...' : 'ثبت خرابی'}

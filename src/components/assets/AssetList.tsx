@@ -120,11 +120,11 @@ export function AssetList() {
 
       {/* Add Asset Sheet */}
       <Sheet open={showForm} onOpenChange={setShowForm}>
-        <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>افزودن دارایی جدید</SheetTitle>
+        <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto">
+          <SheetHeader className="px-5 pt-2 pb-1">
+            <SheetTitle className="text-base">افزودن دارایی جدید</SheetTitle>
           </SheetHeader>
-          <div className="mt-4">
+          <div className="px-5 pb-6 overflow-y-auto flex-1">
             <AssetForm categories={categories} locations={locations} onClose={() => setShowForm(false)} />
           </div>
         </SheetContent>

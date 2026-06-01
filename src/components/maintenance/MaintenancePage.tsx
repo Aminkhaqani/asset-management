@@ -186,11 +186,11 @@ export function MaintenancePage() {
       </Tabs>
 
       <Sheet open={showForm} onOpenChange={setShowForm}>
-        <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>{formType === 'preventive' ? 'دستور کار نگهداری پیشگیرانه' : 'دستور کار تعمیرات اصلاحی'}</SheetTitle>
+        <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto">
+          <SheetHeader className="px-5 pt-2 pb-1">
+            <SheetTitle className="text-base">{formType === 'preventive' ? 'دستور کار نگهداری پیشگیرانه' : 'دستور کار تعمیرات اصلاحی'}</SheetTitle>
           </SheetHeader>
-          <div className="mt-4">
+          <div className="px-5 pb-6 overflow-y-auto flex-1">
             <WorkOrderForm type={formType} onClose={() => setShowForm(false)} />
           </div>
         </SheetContent>
