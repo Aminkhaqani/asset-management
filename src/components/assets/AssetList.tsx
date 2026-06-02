@@ -6,7 +6,7 @@ import { AssetCard } from './AssetCard'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Search, Plus, Filter, HardHat } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { AssetForm } from './AssetForm'
@@ -140,17 +140,15 @@ export function AssetList() {
         </div>
       )}
 
-      {/* Add Asset Sheet */}
-      <Sheet open={showForm} onOpenChange={setShowForm}>
-        <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto">
-          <SheetHeader className="px-5 pt-2 pb-1">
-            <SheetTitle className="text-base">افزودن دارایی جدید</SheetTitle>
-          </SheetHeader>
-          <div className="px-5 pb-6 overflow-y-auto flex-1">
-            <AssetForm categories={categories} locations={locations} onClose={() => setShowForm(false)} />
-          </div>
-        </SheetContent>
-      </Sheet>
+      {/* Add Asset Dialog */}
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-base">افزودن دارایی جدید</DialogTitle>
+          </DialogHeader>
+          <AssetForm categories={categories} locations={locations} onClose={() => setShowForm(false)} />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

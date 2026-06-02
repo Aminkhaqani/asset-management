@@ -11,7 +11,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Search, Plus, Building2, Phone, MapPin, User, Wrench, ToggleLeft, ToggleRight, Trash2, Edit, Loader2 } from 'lucide-react'
 import { toPersianNumber, workshopSpecialtyLabels, formatPersianDate } from '@/lib/persian'
 import { toast } from 'sonner'
@@ -326,13 +325,12 @@ export function WorkshopList() {
         </div>
       )}
 
-      {/* Add/Edit Form Sheet */}
-      <Sheet open={showForm} onOpenChange={(open) => { if (!open) closeForm() }}>
-        <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto">
-          <SheetHeader className="px-5 pt-2 pb-1">
-            <SheetTitle className="text-base">{editingWorkshop ? 'ویرایش تعمیرگاه' : 'افزودن تعمیرگاه جدید'}</SheetTitle>
-          </SheetHeader>
-          <div className="px-5 pb-6 overflow-y-auto flex-1">
+      {/* Add/Edit Form Dialog */}
+      <Dialog open={showForm} onOpenChange={(open) => { if (!open) closeForm() }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-base">{editingWorkshop ? 'ویرایش تعمیرگاه' : 'افزودن تعمیرگاه جدید'}</DialogTitle>
+          </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
               <div className="space-y-1.5">
@@ -425,9 +423,8 @@ export function WorkshopList() {
               </Button>
             </div>
           </form>
-          </div>
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={!!deleteConfirm} onOpenChange={(open) => { if (!open) setDeleteConfirm(null) }}>

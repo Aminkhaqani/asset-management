@@ -9,7 +9,7 @@ import { PersianDate } from '@/components/shared/PersianDate'
 import { faultTypeLabels } from '@/lib/persian'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { FaultForm } from './FaultForm'
 import { Plus, AlertTriangle, Filter, X } from 'lucide-react'
 import { useState, useEffect } from 'react'
@@ -175,16 +175,14 @@ export function FaultList() {
         </div>
       )}
 
-      <Sheet open={showForm} onOpenChange={setShowForm}>
-        <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto">
-          <SheetHeader className="px-5 pt-2 pb-1">
-            <SheetTitle className="text-base">ثبت خرابی جدید</SheetTitle>
-          </SheetHeader>
-          <div className="px-5 pb-6 overflow-y-auto flex-1">
-            <FaultForm onClose={() => setShowForm(false)} />
-          </div>
-        </SheetContent>
-      </Sheet>
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-base">ثبت خرابی جدید</DialogTitle>
+          </DialogHeader>
+          <FaultForm onClose={() => setShowForm(false)} />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -10,7 +10,6 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { PersianDate } from '@/components/shared/PersianDate'
 import { toPersianNumber, priorityLabels } from '@/lib/persian'
@@ -527,21 +526,19 @@ export function PMPlansList({ assetId, showGenerate = true }: PMPlansListProps) 
         </div>
       )}
 
-      {/* Add/Edit Sheet */}
-      <Sheet open={showForm} onOpenChange={(open) => { setShowForm(open); if (!open) setEditingPlan(null) }}>
-        <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto">
-          <SheetHeader className="px-5 pt-2 pb-1">
-            <SheetTitle className="text-base">{editingPlan ? 'ویرایش برنامه PM' : 'ایجاد برنامه PM جدید'}</SheetTitle>
-          </SheetHeader>
-          <div className="px-5 pb-6 overflow-y-auto flex-1">
-            <PMPlanForm
-              plan={editingPlan}
-              assetId={assetId}
-              onClose={() => { setShowForm(false); setEditingPlan(null) }}
-            />
-          </div>
-        </SheetContent>
-      </Sheet>
+      {/* Add/Edit Dialog */}
+      <Dialog open={showForm} onOpenChange={(open) => { setShowForm(open); if (!open) setEditingPlan(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-base">{editingPlan ? 'ویرایش برنامه PM' : 'ایجاد برنامه PM جدید'}</DialogTitle>
+          </DialogHeader>
+          <PMPlanForm
+            plan={editingPlan}
+            assetId={assetId}
+            onClose={() => { setShowForm(false); setEditingPlan(null) }}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={!!deleteDialog} onOpenChange={(open) => { if (!open) setDeleteDialog(null) }}>
