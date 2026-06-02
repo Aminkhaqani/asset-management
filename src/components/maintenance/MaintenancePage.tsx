@@ -13,12 +13,29 @@ import { Plus, Wrench, Clock, AlertTriangle, CheckCircle, Building2, Settings, C
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { WorkOrderForm } from './WorkOrderForm'
 import { PMPlansList } from './PMPlansList'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export function MaintenancePage() {
   const navigate = useAppStore((s) => s.navigate)
+  const navigationFilters = useAppStore((s) => s.navigationFilters)
+  const clearFilters = useAppStore((s) => s.clearFilters)
   const [showForm, setShowForm] = useState(false)
   const [formType, setFormType] = useState<'preventive' | 'corrective'>('preventive')
+  const [activeTab, setActiveTab] = useState('pm')
+
+  // Apply navigation filters from dashboard on mount
+  useEffect(() => {
+    if (navigationFilters.type === 'overdue') {
+      setActiveTab('pm-due')
+    } else if (navigationFilters.type === 'open') {
+      setActiveTab('pm')
+    } else if (navigationFilters.type === 'corrective') {
+      setActiveTab('cm')
+    }
+    if (Object.keys(navigationFilters).length > 0) {
+      clearFilters()
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const { data: pmOrders = [], isLoading: pmLoading } = useQuery({
     queryKey: ['work-orders', 'preventive'],
@@ -85,7 +102,7 @@ export function MaintenancePage() {
         <h2 className="text-lg font-bold">نگهداری و تعمیرات</h2>
       </div>
 
-      <Tabs defaultValue="pm">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="w-full">
           <TabsTrigger value="pm" className="flex-1">نگهداری پیشگیرانه</TabsTrigger>
           <TabsTrigger value="cm" className="flex-1">تعمیرات اصلاحی</TabsTrigger>

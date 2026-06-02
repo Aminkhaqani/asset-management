@@ -22,7 +22,7 @@ export async function GET() {
       db.workOrder.count({ where: { status: { in: ['pending', 'assigned', 'in_progress'] } } }),
       db.fault.findMany({ where: { status: { in: ['open', 'in_progress'] } }, include: { asset: true }, orderBy: { reportedAt: 'desc' }, take: 10 }),
       db.assetCategory.findMany({ include: { _count: { select: { assets: true } }, assets: { include: { faults: { where: { status: { in: ['open', 'in_progress'] } } } } } } }),
-      db.timelineEvent.findMany({ orderBy: { eventDate: 'desc' }, take: 10 }),
+      db.timelineEvent.findMany({ orderBy: { eventDate: 'desc' }, take: 10, include: { asset: { select: { nameFa: true, assetCode: true, id: true } } } }),
     ])
 
     const availableAssets = totalAssets - assetsDown

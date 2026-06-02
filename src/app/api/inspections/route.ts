@@ -5,9 +5,13 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const assetId = searchParams.get('assetId') || ''
+    const status = searchParams.get('status') || ''
+    const shift = searchParams.get('shift') || ''
     
     const where: Record<string, unknown> = {}
     if (assetId) where.assetId = assetId
+    if (status) where.status = status
+    if (shift) where.shift = shift
 
     const inspections = await db.inspection.findMany({
       where,

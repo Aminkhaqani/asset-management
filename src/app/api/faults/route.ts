@@ -7,11 +7,13 @@ export async function GET(request: Request) {
     const assetId = searchParams.get('assetId') || ''
     const status = searchParams.get('status') || ''
     const priority = searchParams.get('priority') || ''
+    const faultType = searchParams.get('faultType') || ''
     
     const where: Record<string, unknown> = {}
     if (assetId) where.assetId = assetId
     if (status) where.status = status
     if (priority) where.priority = priority
+    if (faultType) where.faultType = faultType
 
     const faults = await db.fault.findMany({
       where,

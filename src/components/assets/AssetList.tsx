@@ -8,17 +8,39 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Search, Plus, Filter, HardHat } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AssetForm } from './AssetForm'
 
 export function AssetList() {
   const navigate = useAppStore((s) => s.navigate)
+  const navigationFilters = useAppStore((s) => s.navigationFilters)
+  const clearFilters = useAppStore((s) => s.clearFilters)
+
   const [search, setSearch] = useState('')
   const [categoryId, setCategoryId] = useState('')
   const [status, setStatus] = useState('')
   const [criticality, setCriticality] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
+
+  // Apply navigation filters from dashboard on mount
+  useEffect(() => {
+    if (navigationFilters.status) {
+      setStatus(navigationFilters.status)
+      setShowFilters(true)
+    }
+    if (navigationFilters.criticality) {
+      setCriticality(navigationFilters.criticality)
+      setShowFilters(true)
+    }
+    if (navigationFilters.categoryId) {
+      setCategoryId(navigationFilters.categoryId)
+      setShowFilters(true)
+    }
+    if (Object.keys(navigationFilters).length > 0) {
+      clearFilters()
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const { data: assets = [], isLoading } = useQuery({
     queryKey: ['assets', search, categoryId, status, criticality],
