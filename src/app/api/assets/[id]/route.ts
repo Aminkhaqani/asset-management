@@ -19,7 +19,26 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       },
     })
     if (!asset) return NextResponse.json({ error: 'Asset not found' }, { status: 404 })
-    return NextResponse.json(asset)
+    const customFields = typeof asset.customFields === 'object' && asset.customFields !== null
+      ? asset.customFields as Record<string, any>
+      : {}
+    const assignment = typeof customFields.assignment === 'object' && customFields.assignment !== null
+      ? customFields.assignment as Record<string, string>
+      : {}
+    const assignedUserIds = [
+      assignment.primaryExpertId,
+      assignment.maintenanceOwnerId,
+      assignment.inspectionOwnerId,
+    ].filter(Boolean)
+
+    const assignedUsers = assignedUserIds.length > 0
+      ? await db.user.findMany({
+        where: { id: { in: assignedUserIds } },
+        select: { id: true, name: true, role: true },
+      })
+      : []
+
+    return NextResponse.json({ ...asset, assignedUsers })
   } catch (error) {
     console.error('Asset detail error:', error)
     return NextResponse.json({ error: 'Failed to load asset' }, { status: 500 })
