@@ -7,17 +7,33 @@ export async function GET(request: Request) {
     const type = searchParams.get('type') || ''
     const status = searchParams.get('status') || ''
     const assetId = searchParams.get('assetId') || ''
+    const assetType = searchParams.get('assetType') || ''
+    const assignedToId = searchParams.get('assignedToId') || ''
+    const priority = searchParams.get('priority') || ''
+    const repairType = searchParams.get('repairType') || ''
+    const dateFrom = searchParams.get('dateFrom') || ''
+    const dateTo = searchParams.get('dateTo') || ''
 
     const where: Record<string, unknown> = {}
     if (type) where.type = type
     if (status) where.status = status
     if (assetId) where.assetId = assetId
+    if (assetType) where.asset = { is: { assetType } }
+    if (assignedToId) where.assignedToId = assignedToId
+    if (priority) where.priority = priority
+    if (repairType) where.repairType = repairType
+    if (dateFrom || dateTo) {
+      where.createdAt = {
+        ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
+        ...(dateTo ? { lte: new Date(`${dateTo}T23:59:59.999Z`) } : {}),
+      }
+    }
 
     const workOrders = await db.workOrder.findMany({
       where,
       include: {
-        asset: { select: { nameFa: true, assetCode: true } },
-        assignedTo: { select: { name: true } },
+        asset: { select: { nameFa: true, assetCode: true, assetType: true } },
+        assignedTo: { select: { id: true, name: true } },
         fault: { select: { id: true, faultType: true, priority: true } },
         workshop: { select: { id: true, name: true, code: true, phone: true } },
       },

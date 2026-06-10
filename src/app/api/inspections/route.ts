@@ -5,17 +5,32 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const assetId = searchParams.get('assetId') || ''
+    const assetType = searchParams.get('assetType') || ''
+    const inspectorId = searchParams.get('inspectorId') || ''
     const status = searchParams.get('status') || ''
     const shift = searchParams.get('shift') || ''
+    const dateFrom = searchParams.get('dateFrom') || ''
+    const dateTo = searchParams.get('dateTo') || ''
     
     const where: Record<string, unknown> = {}
     if (assetId) where.assetId = assetId
+    if (assetType) where.asset = { is: { assetType } }
+    if (inspectorId) where.inspectorId = inspectorId
     if (status) where.status = status
     if (shift) where.shift = shift
+    if (dateFrom || dateTo) {
+      where.date = {
+        ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
+        ...(dateTo ? { lte: new Date(`${dateTo}T23:59:59.999Z`) } : {}),
+      }
+    }
 
     const inspections = await db.inspection.findMany({
       where,
-      include: { asset: { select: { nameFa: true, assetCode: true } }, inspector: { select: { name: true } } },
+      include: {
+        asset: { select: { nameFa: true, assetCode: true, assetType: true } },
+        inspector: { select: { id: true, name: true } },
+      },
       orderBy: { date: 'desc' },
       take: 50,
     })

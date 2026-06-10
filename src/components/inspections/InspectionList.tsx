@@ -2,17 +2,18 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { useAppStore } from '@/store/useAppStore'
-import { Card, CardContent } from '@/components/ui/card'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { PersianDate } from '@/components/shared/PersianDate'
-import { shiftLabels, statusLabels } from '@/lib/persian'
+import { shiftLabels } from '@/lib/persian'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
 import { Plus, ClipboardCheck, ArrowRight, Filter, X } from 'lucide-react'
 import { InspectionForm } from './InspectionForm'
 import { InspectionDetail } from './InspectionDetail'
 import { AssetQRScanner } from '@/components/shared/AssetQRScanner'
 import { useState, useEffect } from 'react'
+import { assetTypeDefinitions, getAssetTypeLabel } from '@/lib/asset-types'
 
 type InspectionStep = 'list' | 'scan' | 'form' | 'detail'
 
@@ -22,31 +23,23 @@ export function InspectionList() {
   const selectedInspectionId = useAppStore((s) => s.selectedInspectionId)
   const clearFilters = useAppStore((s) => s.clearFilters)
 
-  const [step, setStep] = useState<InspectionStep>('list')
+  const [step, setStep] = useState<InspectionStep>(selectedInspectionId ? 'detail' : 'list')
   const [scannedAsset, setScannedAsset] = useState<any>(null)
-  const [statusFilter, setStatusFilter] = useState('')
+  const [assetFilter, setAssetFilter] = useState('')
+  const [assetTypeFilter, setAssetTypeFilter] = useState('')
+  const [inspectorFilter, setInspectorFilter] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [statusFilter, setStatusFilter] = useState(navigationFilters.status ?? '')
   const [shiftFilter, setShiftFilter] = useState('')
-  const [showFilters, setShowFilters] = useState(false)
-  const [viewingInspectionId, setViewingInspectionId] = useState<string | null>(null)
+  const [showFilters, setShowFilters] = useState(Object.keys(navigationFilters).length > 0)
+  const [viewingInspectionId, setViewingInspectionId] = useState<string | null>(selectedInspectionId)
 
-  // Navigate to detail if selectedInspectionId is set
   useEffect(() => {
-    if (selectedInspectionId) {
-      setViewingInspectionId(selectedInspectionId)
-      setStep('detail')
-    }
-  }, [selectedInspectionId])
-
-  // Apply navigation filters from dashboard on mount
-  useEffect(() => {
-    if (navigationFilters.status) {
-      setStatusFilter(navigationFilters.status)
-      setShowFilters(true)
-    }
     if (Object.keys(navigationFilters).length > 0) {
       clearFilters()
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [clearFilters, navigationFilters])
 
   const handleNewInspection = () => {
     setScannedAsset(null)
@@ -78,17 +71,46 @@ export function InspectionList() {
     setScannedAsset(null)
   }
 
-  const { data: inspections = [], isLoading } = useQuery({
-    queryKey: ['inspections', statusFilter, shiftFilter],
+  const { data: inspectionsResponse = [], isLoading } = useQuery({
+    queryKey: ['inspections', assetFilter, assetTypeFilter, inspectorFilter, dateFrom, dateTo, statusFilter, shiftFilter],
     queryFn: () => {
       const params = new URLSearchParams()
+      if (assetFilter) params.set('assetId', assetFilter)
+      if (assetTypeFilter) params.set('assetType', assetTypeFilter)
+      if (inspectorFilter) params.set('inspectorId', inspectorFilter)
+      if (dateFrom) params.set('dateFrom', dateFrom)
+      if (dateTo) params.set('dateTo', dateTo)
       if (statusFilter) params.set('status', statusFilter)
       if (shiftFilter) params.set('shift', shiftFilter)
       return fetch(`/api/inspections?${params}`).then(r => r.json())
     },
   })
 
-  const hasActiveFilters = statusFilter || shiftFilter
+  const { data: assetsResponse = [] } = useQuery({
+    queryKey: ['assets'],
+    queryFn: () => fetch('/api/assets').then(r => r.json()),
+  })
+
+  const { data: usersResponse = [] } = useQuery({
+    queryKey: ['users'],
+    queryFn: () => fetch('/api/users').then(r => r.json()),
+  })
+
+  const inspections = Array.isArray(inspectionsResponse) ? inspectionsResponse : []
+  const assets = Array.isArray(assetsResponse) ? assetsResponse : []
+  const users = Array.isArray(usersResponse) ? usersResponse : []
+
+  const hasActiveFilters = Boolean(assetFilter || assetTypeFilter || inspectorFilter || dateFrom || dateTo || statusFilter || shiftFilter)
+
+  const clearAllFilters = () => {
+    setAssetFilter('')
+    setAssetTypeFilter('')
+    setInspectorFilter('')
+    setDateFrom('')
+    setDateTo('')
+    setStatusFilter('')
+    setShiftFilter('')
+  }
 
   // Detail step
   if (step === 'detail' && viewingInspectionId) {
@@ -160,7 +182,7 @@ export function InspectionList() {
           )}
         </Button>
         {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={() => { setStatusFilter(''); setShiftFilter('') }}>
+          <Button variant="ghost" size="sm" onClick={clearAllFilters}>
             <X className="h-3.5 w-3.5 ml-1" />
             پاک‌سازی
           </Button>
@@ -168,7 +190,34 @@ export function InspectionList() {
       </div>
 
       {showFilters && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2 rounded-lg border bg-muted/20 p-3">
+          <Select value={assetFilter} onValueChange={(v) => setAssetFilter(v === '__all__' ? '' : v)}>
+            <SelectTrigger><SelectValue placeholder="دارایی" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">همه دارایی‌ها</SelectItem>
+              {assets.map((asset: any) => (
+                <SelectItem key={asset.id} value={asset.id}>{asset.assetCode} - {asset.nameFa}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={assetTypeFilter} onValueChange={(v) => setAssetTypeFilter(v === '__all__' ? '' : v)}>
+            <SelectTrigger><SelectValue placeholder="نوع دارایی" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">همه انواع</SelectItem>
+              {assetTypeDefinitions.map((type) => (
+                <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={inspectorFilter} onValueChange={(v) => setInspectorFilter(v === '__all__' ? '' : v)}>
+            <SelectTrigger><SelectValue placeholder="کارشناس بازدید" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">همه کارشناسان</SelectItem>
+              {users.map((user: any) => (
+                <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v === '__all__' ? '' : v)}>
             <SelectTrigger><SelectValue placeholder="وضعیت" /></SelectTrigger>
             <SelectContent>
@@ -187,6 +236,8 @@ export function InspectionList() {
               <SelectItem value="night">شب</SelectItem>
             </SelectContent>
           </Select>
+          <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} aria-label="از تاریخ" />
+          <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} aria-label="تا تاریخ" />
         </div>
       )}
 
@@ -202,30 +253,34 @@ export function InspectionList() {
           <p>بازدیدی ثبت نشده</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="overflow-hidden rounded-lg border bg-background">
+          <div className="hidden md:grid grid-cols-[1.8fr_1fr_1fr_1fr_1fr_0.9fr] gap-3 border-b bg-muted/40 px-3 py-2 text-xs font-medium text-muted-foreground">
+            <span>دارایی</span>
+            <span>نوع دارایی</span>
+            <span>کارشناس</span>
+            <span>شیفت</span>
+            <span>تاریخ</span>
+            <span className="text-left">وضعیت</span>
+          </div>
           {inspections.map((insp: any) => (
-            <Card
+            <button
               key={insp.id}
-              className="border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow active:scale-[0.99]"
+              className="grid w-full grid-cols-[1fr_auto] items-center gap-3 border-b px-3 py-3 text-right transition-colors last:border-b-0 hover:bg-muted/50 md:grid-cols-[1.8fr_1fr_1fr_1fr_1fr_0.9fr]"
               onClick={() => { setViewingInspectionId(insp.id); setStep('detail') }}
             >
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">{insp.asset?.nameFa}</p>
-                    <p className="text-xs text-muted-foreground">{insp.asset?.assetCode}</p>
-                  </div>
-                  <StatusBadge status={insp.status} />
-                </div>
-                <div className="flex items-center justify-between mt-3 pt-3 border-t">
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    <span>{insp.inspector?.name}</span>
-                    <span>{shiftLabels[insp.shift || ''] || '—'}</span>
-                  </div>
-                  <PersianDate date={insp.date} relative />
-                </div>
-              </CardContent>
-            </Card>
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-medium">{insp.asset?.nameFa}</span>
+                <span className="block truncate text-xs text-muted-foreground">{insp.asset?.assetCode}</span>
+              </span>
+              <span className="hidden text-sm text-muted-foreground md:block">{getAssetTypeLabel(insp.asset?.assetType)}</span>
+              <span className="hidden truncate text-sm text-muted-foreground md:block">{insp.inspector?.name || '—'}</span>
+              <span className="hidden text-sm text-muted-foreground md:block">{shiftLabels[insp.shift || ''] || '—'}</span>
+              <span className="hidden text-sm text-muted-foreground md:block"><PersianDate date={insp.date} relative /></span>
+              <span className="justify-self-end md:justify-self-start"><StatusBadge status={insp.status} /></span>
+              <span className="col-span-2 text-xs text-muted-foreground md:hidden">
+                {insp.inspector?.name || '—'} • <PersianDate date={insp.date} relative />
+              </span>
+            </button>
           ))}
         </div>
       )}
