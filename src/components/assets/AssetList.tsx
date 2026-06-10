@@ -148,7 +148,7 @@ export function AssetList() {
 
       {/* Add Asset Dialog */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle className="text-base">افزودن دارایی جدید</DialogTitle>
           </DialogHeader>

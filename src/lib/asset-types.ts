@@ -1,6 +1,6 @@
 export type AssetType = 'equipment' | 'vehicle' | 'wagon' | 'chiller' | 'other'
 
-export type AssetFieldType = 'text' | 'number' | 'select'
+export type AssetFieldType = 'text' | 'number' | 'select' | 'date' | 'textarea'
 
 export interface AssetTypeField {
   key: string
@@ -16,14 +16,41 @@ export interface AssetTypeDefinition {
   label: string
   description: string
   fields: AssetTypeField[]
+  identityFields: AssetTypeField[]
 }
+
+const ownershipFields: AssetTypeField[] = [
+  {
+    key: 'ownershipType',
+    label: 'نوع مالکیت',
+    type: 'select',
+    options: [
+      { value: 'owned', label: 'تملکی' },
+      { value: 'leased', label: 'اجاره‌ای' },
+      { value: 'contracted', label: 'قراردادی' },
+      { value: 'borrowed', label: 'امانی' },
+    ],
+  },
+  { key: 'documentNumber', label: 'شماره سند', type: 'text', placeholder: 'شماره سند یا پرونده' },
+  { key: 'purchaseInvoiceNumber', label: 'شماره فاکتور خرید', type: 'text', placeholder: 'شماره فاکتور' },
+  { key: 'purchaseDate', label: 'تاریخ خرید/شروع بهره‌برداری', type: 'date' },
+  { key: 'vendorOrOwner', label: 'مالک/فروشنده/طرف قرارداد', type: 'text', placeholder: 'نام شخص یا شرکت' },
+  { key: 'contractNumber', label: 'شماره قرارداد', type: 'text', placeholder: 'شماره قرارداد اجاره یا بهره‌برداری' },
+  { key: 'contractExpiry', label: 'پایان قرارداد/گارانتی', type: 'date' },
+]
 
 export const assetTypeDefinitions: AssetTypeDefinition[] = [
   {
     value: 'equipment',
     label: 'تجهیزات عمومی',
     description: 'دارایی‌های تاسیساتی یا تجهیزاتی با مشخصات عمومی',
-    fields: [],
+    fields: [
+      { key: 'weight', label: 'وزن', type: 'text', placeholder: 'مثلا 250 کیلوگرم' },
+      { key: 'power', label: 'توان', type: 'text', placeholder: 'مثلا 15 kW' },
+      { key: 'workingPressure', label: 'فشار کاری', type: 'text', placeholder: 'مثلا 8 bar' },
+      { key: 'usage', label: 'کاربری', type: 'text', placeholder: 'کاربری اصلی دارایی' },
+    ],
+    identityFields: ownershipFields,
   },
   {
     value: 'vehicle',
@@ -33,6 +60,9 @@ export const assetTypeDefinitions: AssetTypeDefinition[] = [
       { key: 'mileage', label: 'کارکرد', type: 'number', unit: 'کیلومتر', placeholder: 'مثلا 85000' },
       { key: 'plateNumber', label: 'شماره پلاک', type: 'text', placeholder: 'مثلا 12 ب 345 ایران 67' },
       { key: 'vin', label: 'شماره شاسی', type: 'text', placeholder: 'VIN', },
+      { key: 'passengerCapacity', label: 'تعداد سرنشین', type: 'number', placeholder: 'مثلا 5' },
+      { key: 'axleCount', label: 'تعداد محور', type: 'number', placeholder: 'مثلا 2' },
+      { key: 'enginePower', label: 'قدرت موتور', type: 'text', placeholder: 'مثلا 180 hp' },
       {
         key: 'fuelType',
         label: 'نوع سوخت',
@@ -45,6 +75,13 @@ export const assetTypeDefinitions: AssetTypeDefinition[] = [
         ],
       },
     ],
+    identityFields: [
+      ...ownershipFields,
+      { key: 'vehicleCardNumber', label: 'شماره کارت خودرو', type: 'text', placeholder: 'شماره کارت خودرو' },
+      { key: 'insurancePolicyNumber', label: 'شماره بیمه‌نامه', type: 'text', placeholder: 'شماره بیمه‌نامه' },
+      { key: 'insuranceExpiry', label: 'پایان بیمه', type: 'date' },
+      { key: 'technicalInspectionExpiry', label: 'پایان معاینه فنی', type: 'date' },
+    ],
   },
   {
     value: 'wagon',
@@ -54,6 +91,13 @@ export const assetTypeDefinitions: AssetTypeDefinition[] = [
       { key: 'wagonNumber', label: 'شماره واگن', type: 'text', placeholder: 'مثلا WGN-1042' },
       { key: 'axleCount', label: 'تعداد محور', type: 'number', placeholder: 'مثلا 4' },
       { key: 'loadCapacity', label: 'ظرفیت بار', type: 'text', placeholder: 'مثلا 60 تن' },
+      { key: 'wagonUsage', label: 'کاربری واگن', type: 'text', placeholder: 'مسافری، باری، خدماتی' },
+      { key: 'brakeSystem', label: 'سیستم ترمز', type: 'text', placeholder: 'نوع سیستم ترمز' },
+    ],
+    identityFields: [
+      ...ownershipFields,
+      { key: 'railRegistryNumber', label: 'شماره ثبت ریلی', type: 'text', placeholder: 'شماره ثبت یا مجوز ریلی' },
+      { key: 'operationPermitExpiry', label: 'پایان مجوز بهره‌برداری', type: 'date' },
     ],
   },
   {
@@ -64,6 +108,15 @@ export const assetTypeDefinitions: AssetTypeDefinition[] = [
       { key: 'refrigerant', label: 'نوع مبرد', type: 'text', placeholder: 'مثلا R-134a' },
       { key: 'coolingCapacity', label: 'ظرفیت سرمایش', type: 'text', placeholder: 'مثلا 450 تن' },
       { key: 'compressorCount', label: 'تعداد کمپرسور', type: 'number', placeholder: 'مثلا 2' },
+      { key: 'power', label: 'توان مصرفی', type: 'text', placeholder: 'مثلا 320 kW' },
+      { key: 'evaporatorPressure', label: 'فشار اواپراتور', type: 'text', placeholder: 'مثلا 4 bar' },
+      { key: 'condenserPressure', label: 'فشار کندانسور', type: 'text', placeholder: 'مثلا 12 bar' },
+    ],
+    identityFields: [
+      ...ownershipFields,
+      { key: 'warrantyCardNumber', label: 'شماره کارت ضمانت', type: 'text', placeholder: 'شماره گارانتی' },
+      { key: 'contractor', label: 'پیمانکار نصب/بهره‌برداری', type: 'text', placeholder: 'نام پیمانکار' },
+      { key: 'serviceContractNumber', label: 'قرارداد سرویس', type: 'text', placeholder: 'شماره قرارداد سرویس' },
     ],
   },
   {
@@ -72,7 +125,10 @@ export const assetTypeDefinitions: AssetTypeDefinition[] = [
     description: 'دارایی‌هایی که نوع اختصاصی ندارند',
     fields: [
       { key: 'identifier', label: 'شناسه اختصاصی', type: 'text', placeholder: 'شناسه یا ویژگی مهم' },
+      { key: 'usage', label: 'کاربری', type: 'text', placeholder: 'کاربری دارایی' },
+      { key: 'technicalNotes', label: 'مشخصات تکمیلی', type: 'textarea', placeholder: 'مشخصات اختصاصی این دارایی' },
     ],
+    identityFields: ownershipFields,
   },
 ]
 
