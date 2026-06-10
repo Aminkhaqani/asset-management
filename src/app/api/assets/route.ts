@@ -9,6 +9,7 @@ export async function GET(request: Request) {
     const status = searchParams.get('status') || ''
     const locationId = searchParams.get('locationId') || ''
     const criticality = searchParams.get('criticality') || ''
+    const assetType = searchParams.get('assetType') || ''
 
     const where: Record<string, unknown> = {}
     
@@ -23,6 +24,7 @@ export async function GET(request: Request) {
     if (status) where.status = status
     if (locationId) where.locationId = locationId
     if (criticality) where.criticality = criticality
+    if (assetType) where.assetType = assetType
 
     const assets = await db.asset.findMany({
       where,
@@ -40,7 +42,26 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const asset = await db.asset.create({ data: body })
+    const asset = await db.asset.create({
+      data: {
+        assetCode: body.assetCode,
+        nameFa: body.nameFa,
+        nameEn: body.nameEn || null,
+        assetType: body.assetType || 'equipment',
+        categoryId: body.categoryId,
+        locationId: body.locationId,
+        brand: body.brand || null,
+        model: body.model || null,
+        serialNumber: body.serialNumber || null,
+        capacity: body.capacity || null,
+        specifications: body.specifications || null,
+        customFields: body.customFields || {},
+        criticality: body.criticality || 'medium',
+        status: body.status || 'active',
+        qrCode: body.qrCode,
+        notes: body.notes || null,
+      },
+    })
     return NextResponse.json(asset, { status: 201 })
   } catch (error) {
     console.error('Create asset error:', error)

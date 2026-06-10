@@ -55,6 +55,7 @@ model Asset {
   assetCode      String    @unique
   nameFa         String
   nameEn         String?
+  assetType      String    @default("equipment")
   categoryId     String
   category       AssetCategory @relation(fields: [categoryId], references: [id])
   brand          String?
@@ -66,6 +67,7 @@ model Asset {
   warrantyExpiry DateTime?
   capacity       String?
   specifications String?
+  customFields   Json      @default("{}")
   criticality    String    @default("medium")
   status         String    @default("active")
   qrCode         String    @unique

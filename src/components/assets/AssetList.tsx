@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Search, Plus, Filter, HardHat } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { AssetForm } from './AssetForm'
+import { assetTypeDefinitions } from '@/lib/asset-types'
 
 export function AssetList() {
   const navigate = useAppStore((s) => s.navigate)
@@ -17,52 +18,48 @@ export function AssetList() {
   const clearFilters = useAppStore((s) => s.clearFilters)
 
   const [search, setSearch] = useState('')
-  const [categoryId, setCategoryId] = useState('')
-  const [status, setStatus] = useState('')
-  const [criticality, setCriticality] = useState('')
+  const [categoryId, setCategoryId] = useState(navigationFilters.categoryId ?? '')
+  const [assetType, setAssetType] = useState('')
+  const [status, setStatus] = useState(navigationFilters.status ?? '')
+  const [criticality, setCriticality] = useState(navigationFilters.criticality ?? '')
   const [showForm, setShowForm] = useState(false)
-  const [showFilters, setShowFilters] = useState(false)
+  const [showFilters, setShowFilters] = useState(Object.keys(navigationFilters).length > 0)
 
   // Apply navigation filters from dashboard on mount
   useEffect(() => {
-    if (navigationFilters.status) {
-      setStatus(navigationFilters.status)
-      setShowFilters(true)
-    }
-    if (navigationFilters.criticality) {
-      setCriticality(navigationFilters.criticality)
-      setShowFilters(true)
-    }
-    if (navigationFilters.categoryId) {
-      setCategoryId(navigationFilters.categoryId)
-      setShowFilters(true)
-    }
     if (Object.keys(navigationFilters).length > 0) {
       clearFilters()
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [clearFilters, navigationFilters])
 
-  const { data: assets = [], isLoading } = useQuery({
-    queryKey: ['assets', search, categoryId, status, criticality],
+  const { data: assetsResponse = [], isLoading } = useQuery({
+    queryKey: ['assets', search, categoryId, assetType, status, criticality],
     queryFn: () => {
       const params = new URLSearchParams()
       if (search) params.set('search', search)
       if (categoryId) params.set('categoryId', categoryId)
+      if (assetType) params.set('assetType', assetType)
       if (status) params.set('status', status)
       if (criticality) params.set('criticality', criticality)
       return fetch(`/api/assets?${params}`).then(r => r.json())
     },
   })
 
-  const { data: categories = [] } = useQuery({
+  const assets = Array.isArray(assetsResponse) ? assetsResponse : []
+
+  const { data: categoriesResponse = [] } = useQuery({
     queryKey: ['categories'],
     queryFn: () => fetch('/api/categories').then(r => r.json()),
   })
 
-  const { data: locations = [] } = useQuery({
+  const categories = Array.isArray(categoriesResponse) ? categoriesResponse : []
+
+  const { data: locationsResponse = [] } = useQuery({
     queryKey: ['locations'],
     queryFn: () => fetch('/api/locations').then(r => r.json()),
   })
+
+  const locations = Array.isArray(locationsResponse) ? locationsResponse : []
 
   return (
     <div className="p-4 space-y-4">
@@ -87,7 +84,16 @@ export function AssetList() {
 
       {/* Filters */}
       {showFilters && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <Select value={assetType} onValueChange={(v) => setAssetType(v === '__all__' ? '' : v)}>
+            <SelectTrigger><SelectValue placeholder="نوع دارایی" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">همه</SelectItem>
+              {assetTypeDefinitions.map((type) => (
+                <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select value={categoryId} onValueChange={(v) => setCategoryId(v === '__all__' ? '' : v)}>
             <SelectTrigger><SelectValue placeholder="دسته‌بندی" /></SelectTrigger>
             <SelectContent>

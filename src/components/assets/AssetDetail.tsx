@@ -16,6 +16,7 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PMPlansList } from '@/components/maintenance/PMPlansList'
+import { getAssetTypeDefinition } from '@/lib/asset-types'
 
 export function AssetDetail() {
   const { selectedAssetId, navigate } = useAppStore()
@@ -38,12 +39,29 @@ export function AssetDetail() {
 
   if (!asset) return <div className="p-4 text-center">دارایی یافت نشد</div>
 
-  const parseJson = (str: string | null | undefined) => {
-    if (!str) return {}
-    try { return JSON.parse(str) } catch { return {} }
+  const parseJson = (value: unknown) => {
+    if (!value) return {}
+    if (typeof value === 'object') return value as Record<string, unknown>
+    if (typeof value !== 'string') return {}
+    try { return JSON.parse(value) } catch { return {} }
   }
 
   const specs = parseJson(asset.specifications)
+  const customFields = parseJson(asset.customFields)
+  const assetType = getAssetTypeDefinition(asset.assetType)
+  const customFieldRows = assetType.fields
+    .map((field) => {
+      const rawValue = customFields[field.key]
+      if (rawValue === undefined || rawValue === null || String(rawValue).trim() === '') return null
+      const optionLabel = field.options?.find((option) => option.value === rawValue)?.label
+      return {
+        key: field.key,
+        label: field.label,
+        value: optionLabel || String(rawValue),
+        unit: field.unit,
+      }
+    })
+    .filter(Boolean) as Array<{ key: string; label: string; value: string; unit?: string }>
 
   return (
     <div className="p-4 space-y-4">
@@ -69,6 +87,11 @@ export function AssetDetail() {
               <span className="font-medium">{asset.category?.nameFa}</span>
             </div>
             <CriticalityBadge criticality={asset.criticality} />
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <Settings className="h-4 w-4 text-muted-foreground" />
+            <span className="text-muted-foreground">نوع دارایی:</span>
+            <span className="font-medium">{assetType.label}</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -106,6 +129,28 @@ export function AssetDetail() {
           )}
         </CardContent>
       </Card>
+
+      {/* Type-specific Fields */}
+      {customFieldRows.length > 0 && (
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">ویژگی‌های اختصاصی {assetType.label}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {customFieldRows.map((field) => (
+                <div key={field.key} className="text-sm rounded-lg bg-muted/40 p-2">
+                  <span className="text-muted-foreground">{field.label}: </span>
+                  <span className="font-medium">
+                    {field.value}
+                    {field.unit ? ` ${field.unit}` : ''}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* QR Code */}
       <Card className="border-0 shadow-sm">

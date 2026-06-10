@@ -30,7 +30,27 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params
     const body = await request.json()
-    const asset = await db.asset.update({ where: { id }, data: body })
+    const asset = await db.asset.update({
+      where: { id },
+      data: {
+        assetCode: body.assetCode,
+        nameFa: body.nameFa,
+        nameEn: body.nameEn || null,
+        assetType: body.assetType || 'equipment',
+        categoryId: body.categoryId,
+        locationId: body.locationId,
+        brand: body.brand || null,
+        model: body.model || null,
+        serialNumber: body.serialNumber || null,
+        capacity: body.capacity || null,
+        specifications: body.specifications || null,
+        customFields: body.customFields || {},
+        criticality: body.criticality || 'medium',
+        status: body.status || 'active',
+        qrCode: body.qrCode,
+        notes: body.notes || null,
+      },
+    })
     return NextResponse.json(asset)
   } catch (error) {
     console.error('Update asset error:', error)

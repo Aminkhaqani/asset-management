@@ -6,12 +6,14 @@ import { CriticalityBadge } from '@/components/shared/PriorityBadge'
 import { useAppStore } from '@/store/useAppStore'
 import { HardHat, MapPin } from 'lucide-react'
 import { toPersianNumber } from '@/lib/persian'
+import { getAssetTypeLabel } from '@/lib/asset-types'
 
 interface AssetCardProps {
   asset: {
     id: string
     assetCode: string
     nameFa: string
+    assetType?: string
     status: string
     criticality: string
     category: { nameFa: string; color?: string | null }
@@ -39,7 +41,9 @@ export function AssetCard({ asset }: AssetCardProps) {
             </div>
             <div className="min-w-0">
               <p className="text-sm font-medium truncate">{asset.nameFa}</p>
-              <p className="text-xs text-muted-foreground">{asset.assetCode} • {asset.category.nameFa}</p>
+              <p className="text-xs text-muted-foreground">
+                {asset.assetCode} • {getAssetTypeLabel(asset.assetType)} • {asset.category.nameFa}
+              </p>
             </div>
           </div>
           <StatusBadge status={asset.status} />
