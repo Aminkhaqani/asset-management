@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { assetTypeDefinitions, AssetTypeField, getAssetTypeDefinition } from '@/lib/asset-types'
+import { Plus, Trash2 } from 'lucide-react'
 
 interface AssetFormProps {
   categories: any[]
@@ -19,16 +20,32 @@ interface AssetFormProps {
 
 type FieldValues = Record<string, string>
 
-const pmFields: AssetTypeField[] = [
-  { key: 'pmStrategy', label: 'استراتژی PM', type: 'select', options: [
-    { value: 'time_based', label: 'زمان‌محور' },
-    { value: 'usage_based', label: 'کارکردمحور' },
-    { value: 'condition_based', label: 'شرطی/وضعیت‌محور' },
-  ] },
-  { key: 'pmIntervalDays', label: 'دوره PM', type: 'number', unit: 'روز', placeholder: 'مثلا 30' },
-  { key: 'inspectionIntervalDays', label: 'دوره بازدید', type: 'number', unit: 'روز', placeholder: 'مثلا 7' },
-  { key: 'workInstruction', label: 'دستورالعمل بهره‌برداری/نگهداری', type: 'textarea', placeholder: 'خلاصه دستورالعمل، نکات ایمنی یا چک‌لیست اولیه' },
-  { key: 'safetyNotes', label: 'نکات ایمنی', type: 'textarea', placeholder: 'الزامات ایمنی مرتبط با دارایی' },
+type PMItem = {
+  id: string
+  type: string
+  title: string
+  intervalValue: string
+  intervalUnit: string
+  owner: string
+  description: string
+  checklist: string
+}
+
+const pmItemTypes = [
+  { value: 'periodic_inspection', label: 'بازدید دوره‌ای' },
+  { value: 'checklist', label: 'چک‌لیست' },
+  { value: 'annual_overhaul', label: 'اورهال یک‌ساله' },
+  { value: 'service', label: 'سرویس دوره‌ای' },
+  { value: 'calibration', label: 'کالیبراسیون' },
+  { value: 'safety_test', label: 'تست ایمنی' },
+]
+
+const intervalUnits = [
+  { value: 'day', label: 'روز' },
+  { value: 'week', label: 'هفته' },
+  { value: 'month', label: 'ماه' },
+  { value: 'year', label: 'سال' },
+  { value: 'running_hour', label: 'ساعت کارکرد' },
 ]
 
 const assignmentFields: AssetTypeField[] = [
@@ -60,7 +77,7 @@ export function AssetForm({ categories, locations, onClose }: AssetFormProps) {
     technicalFields: {} as FieldValues,
     identityFields: {} as FieldValues,
     assignmentFields: {} as FieldValues,
-    pmFields: {} as FieldValues,
+    pmItems: [] as PMItem[],
   })
 
   const selectedAssetType = getAssetTypeDefinition(form.assetType)
@@ -110,7 +127,16 @@ export function AssetForm({ categories, locations, onClose }: AssetFormProps) {
     const technicalFields = cleanValues(form.technicalFields)
     const identityFields = cleanValues(form.identityFields)
     const assignmentValues = cleanValues(form.assignmentFields)
-    const pmValues = cleanValues(form.pmFields)
+    const pmItems = form.pmItems
+      .map((item) => ({
+        ...item,
+        title: item.title.trim(),
+        intervalValue: item.intervalValue.trim(),
+        owner: item.owner.trim(),
+        description: item.description.trim(),
+        checklist: item.checklist.trim(),
+      }))
+      .filter((item) => item.title || item.description || item.checklist)
 
     mutation.mutate({
       assetCode: form.assetCode,
@@ -132,7 +158,9 @@ export function AssetForm({ categories, locations, onClose }: AssetFormProps) {
         ...technicalFields,
         identity: identityFields,
         assignment: assignmentValues,
-        pm: pmValues,
+        pm: {
+          items: pmItems,
+        },
       },
     })
   }
@@ -183,7 +211,7 @@ export function AssetForm({ categories, locations, onClose }: AssetFormProps) {
 
   const renderFieldGrid = (
     fields: AssetTypeField[],
-    section: 'technicalFields' | 'identityFields' | 'assignmentFields' | 'pmFields'
+    section: 'technicalFields' | 'identityFields' | 'assignmentFields'
   ) => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4">
       {fields.map((field) => {
@@ -205,6 +233,39 @@ export function AssetForm({ categories, locations, onClose }: AssetFormProps) {
       })}
     </div>
   )
+
+  const addPMItem = () => {
+    setForm({
+      ...form,
+      pmItems: [
+        ...form.pmItems,
+        {
+          id: crypto.randomUUID(),
+          type: 'periodic_inspection',
+          title: '',
+          intervalValue: '',
+          intervalUnit: 'month',
+          owner: '',
+          description: '',
+          checklist: '',
+        },
+      ],
+    })
+  }
+
+  const updatePMItem = (id: string, key: keyof PMItem, value: string) => {
+    setForm({
+      ...form,
+      pmItems: form.pmItems.map((item) => item.id === id ? { ...item, [key]: value } : item),
+    })
+  }
+
+  const removePMItem = (id: string) => {
+    setForm({
+      ...form,
+      pmItems: form.pmItems.filter((item) => item.id !== id),
+    })
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -338,7 +399,106 @@ export function AssetForm({ categories, locations, onClose }: AssetFormProps) {
         </TabsContent>
 
         <TabsContent value="pm" className="space-y-4">
-          {renderFieldGrid(pmFields, 'pmFields')}
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium">برنامه‌ها و دستورالعمل‌های PM</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                ابتدا لیست خالی است؛ بازدید، چک‌لیست، اورهال یا سرویس‌ها را یکی‌یکی اضافه کنید.
+              </p>
+            </div>
+            <Button type="button" size="sm" onClick={addPMItem}>
+              <Plus className="h-4 w-4 ml-1" />
+              افزودن آیتم
+            </Button>
+          </div>
+
+          {form.pmItems.length === 0 ? (
+            <div className="rounded-lg border border-dashed bg-muted/20 px-4 py-8 text-center">
+              <p className="text-sm font-medium text-muted-foreground">هنوز آیتم PM ثبت نشده</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                مثلا بازدید دوره‌ای، چک‌لیست، اورهال یک‌ساله یا کالیبراسیون را اضافه کنید.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {form.pmItems.map((item, index) => (
+                <div key={item.id} className="rounded-lg border bg-background p-3 space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-medium">آیتم {index + 1}</p>
+                    <Button type="button" variant="ghost" size="icon" onClick={() => removePMItem(item.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-sm font-medium">نوع آیتم</Label>
+                      <Select value={item.type} onValueChange={(value) => updatePMItem(item.id, 'type', value)}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {pmItemTypes.map((type) => (
+                            <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-sm font-medium">عنوان</Label>
+                      <Input
+                        value={item.title}
+                        onChange={(e) => updatePMItem(item.id, 'title', e.target.value)}
+                        placeholder="مثلا بازدید ماهانه سیستم ترمز"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-sm font-medium">دوره تکرار</Label>
+                      <div className="grid grid-cols-[1fr_120px] gap-2">
+                        <Input
+                          type="number"
+                          value={item.intervalValue}
+                          onChange={(e) => updatePMItem(item.id, 'intervalValue', e.target.value)}
+                          placeholder="مثلا 1"
+                          dir="ltr"
+                        />
+                        <Select value={item.intervalUnit} onValueChange={(value) => updatePMItem(item.id, 'intervalUnit', value)}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {intervalUnits.map((unit) => (
+                              <SelectItem key={unit.value} value={unit.value}>{unit.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-sm font-medium">مسئول اجرا</Label>
+                      <Input
+                        value={item.owner}
+                        onChange={(e) => updatePMItem(item.id, 'owner', e.target.value)}
+                        placeholder="نام شخص، تیم یا پیمانکار"
+                      />
+                    </div>
+                    <div className="space-y-1.5 md:col-span-2">
+                      <Label className="text-sm font-medium">شرح دستورالعمل</Label>
+                      <Textarea
+                        value={item.description}
+                        onChange={(e) => updatePMItem(item.id, 'description', e.target.value)}
+                        placeholder="شرح کار، نکات ایمنی، ابزار لازم یا شرایط انجام"
+                      />
+                    </div>
+                    <div className="space-y-1.5 md:col-span-2">
+                      <Label className="text-sm font-medium">چک‌لیست/اقلام کنترلی</Label>
+                      <Textarea
+                        value={item.checklist}
+                        onChange={(e) => updatePMItem(item.id, 'checklist', e.target.value)}
+                        placeholder="هر مورد را در یک خط بنویسید"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="space-y-1.5">
             <Label className="text-sm font-medium">توضیحات کلی</Label>
             <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="توضیحات اضافه درباره دارایی" />
