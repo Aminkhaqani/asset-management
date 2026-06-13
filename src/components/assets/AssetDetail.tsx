@@ -29,6 +29,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PMPlansList } from '@/components/maintenance/PMPlansList'
 import { getAssetTypeDefinition } from '@/lib/asset-types'
 import { lifecycleStageLabels, riskLevelLabels } from '@/lib/standards'
+import { VehicleRecordsPanel } from '@/components/assets/VehicleRecordsPanel'
 
 type DetailRow = {
   key: string
@@ -253,6 +254,7 @@ export function AssetDetail() {
           <TabsTrigger value="standard" className="min-w-28">ارزش/ریسک</TabsTrigger>
           <TabsTrigger value="technical" className="min-w-24">فنی</TabsTrigger>
           <TabsTrigger value="assignment" className="min-w-28">تخصیص/مکان</TabsTrigger>
+          {asset.assetType === 'vehicle' && <TabsTrigger value="vehicle" className="min-w-24">ناوگان</TabsTrigger>}
           <TabsTrigger value="pm" className="min-w-24">PM</TabsTrigger>
           <TabsTrigger value="inspections" className="min-w-24">بازدیدها</TabsTrigger>
           <TabsTrigger value="workorders" className="min-w-24">تعمیرات</TabsTrigger>
@@ -340,6 +342,12 @@ export function AssetDetail() {
             ]} />
           </SectionCard>
         </TabsContent>
+
+        {asset.assetType === 'vehicle' && (
+          <TabsContent value="vehicle" className="space-y-3">
+            <VehicleRecordsPanel assetId={asset.id} />
+          </TabsContent>
+        )}
 
         <TabsContent value="pm" className="space-y-3">
           <SectionCard title="آیتم‌های PM تعریف‌شده در کارت دارایی">

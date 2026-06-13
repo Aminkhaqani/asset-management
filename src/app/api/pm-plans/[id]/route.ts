@@ -8,7 +8,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     const plan = await db.preventiveMaintenancePlan.findUnique({
       where: { id },
       include: {
-        asset: { select: { nameFa: true, assetCode: true, id: true } },
+        asset: { select: { nameFa: true, assetCode: true, id: true, assetType: true } },
         workOrders: {
           include: {
             assignedTo: { select: { name: true } },
@@ -20,13 +20,18 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     })
     if (!plan) return NextResponse.json({ error: 'برنامه PM یافت نشد' }, { status: 404 })
 
-    // Get latest running hours
-    const latestInspection = await db.inspection.findFirst({
-      where: { assetId: plan.assetId, runningHours: { not: null } },
-      orderBy: { date: 'desc' },
-      select: { runningHours: true },
-    })
-    const currentRunningHours = latestInspection?.runningHours ?? null
+    // Get latest manual usage. Vehicles use odometer logs; other assets use inspection running hours.
+    const currentRunningHours = plan.asset.assetType === 'vehicle'
+      ? (await db.vehicleOdometerLog.findFirst({
+        where: { assetId: plan.assetId },
+        orderBy: { readingAt: 'desc' },
+        select: { readingKm: true },
+      }))?.readingKm ?? null
+      : (await db.inspection.findFirst({
+        where: { assetId: plan.assetId, runningHours: { not: null } },
+        orderBy: { date: 'desc' },
+        select: { runningHours: true },
+      }))?.runningHours ?? null
     const pmStatus = calculatePmStatus(plan, currentRunningHours, new Date())
     const triggerType = getTriggerType(plan)
 

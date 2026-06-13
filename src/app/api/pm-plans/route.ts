@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     const plans = await db.preventiveMaintenancePlan.findMany({
       where,
       include: {
-        asset: { select: { nameFa: true, assetCode: true, id: true } },
+        asset: { select: { nameFa: true, assetCode: true, id: true, assetType: true } },
         workOrders: {
           where: { status: { in: ['pending', 'assigned', 'in_progress'] } },
           select: { id: true, status: true, title: true },
@@ -32,17 +32,27 @@ export async function GET(request: Request) {
       orderBy: { createdAt: 'desc' },
     })
 
-    // Get latest running hours for each asset
+    // Get latest manual usage for each asset. Vehicles use odometer logs; other assets use inspection running hours.
     const assetIds = [...new Set(plans.map(p => p.assetId))]
     const latestInspections: Record<string, number | null> = {}
     
     for (const aid of assetIds) {
-      const insp = await db.inspection.findFirst({
-        where: { assetId: aid, runningHours: { not: null } },
-        orderBy: { date: 'desc' },
-        select: { runningHours: true },
-      })
-      latestInspections[aid] = insp?.runningHours ?? null
+      const planForAsset = plans.find((plan) => plan.assetId === aid)
+      if (planForAsset?.asset.assetType === 'vehicle') {
+        const log = await db.vehicleOdometerLog.findFirst({
+          where: { assetId: aid },
+          orderBy: { readingAt: 'desc' },
+          select: { readingKm: true },
+        })
+        latestInspections[aid] = log?.readingKm ?? null
+      } else {
+        const insp = await db.inspection.findFirst({
+          where: { assetId: aid, runningHours: { not: null } },
+          orderBy: { date: 'desc' },
+          select: { runningHours: true },
+        })
+        latestInspections[aid] = insp?.runningHours ?? null
+      }
     }
 
     const today = new Date()
@@ -98,7 +108,7 @@ export async function POST(request: Request) {
 
     // Validate at least one trigger is set
     if (!body.intervalDays && !body.intervalRunningHours) {
-      return NextResponse.json({ error: 'حداقل یکی از بازه زمانی یا ساعت کارکرد باید مشخص شود' }, { status: 400 })
+      return NextResponse.json({ error: 'حداقل یکی از بازه زمانی یا کارکرد/کیلومتر باید مشخص شود' }, { status: 400 })
     }
 
     // Calculate nextDueAt if intervalDays is set

@@ -87,13 +87,17 @@ model Asset {
   createdAt              DateTime      @default(now())
   updatedAt              DateTime      @updatedAt
 
-  inspections Inspection[]
-  faults      Fault[]
-  workOrders  WorkOrder[]
-  timeline    TimelineEvent[]
-  attachments AssetAttachment[]
-  checklists  Checklist[]
-  pmPlans     PreventiveMaintenancePlan[]
+  inspections       Inspection[]
+  faults            Fault[]
+  workOrders        WorkOrder[]
+  timeline          TimelineEvent[]
+  attachments       AssetAttachment[]
+  checklists        Checklist[]
+  pmPlans           PreventiveMaintenancePlan[]
+  odometerLogs      VehicleOdometerLog[]
+  fuelLogs          VehicleFuelLog[]
+  driverAssignments VehicleDriverAssignment[]
+  incidents         VehicleIncident[]
 
   @@index([assetType])
   @@index([lifecycleStage])
@@ -111,6 +115,74 @@ model AssetAttachment {
   fileUrl   String
   fileSize  Int?
   createdAt DateTime @default(now())
+}
+
+model VehicleOdometerLog {
+  id         String   @id @default(cuid())
+  assetId    String
+  asset      Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  readingKm  Float
+  readingAt  DateTime @default(now())
+  recordedBy String?
+  notes      String?
+  createdAt  DateTime @default(now())
+
+  @@index([assetId, readingAt])
+}
+
+model VehicleFuelLog {
+  id            String   @id @default(cuid())
+  assetId       String
+  asset         Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  fuelType      String?
+  liters        Float
+  cost          Float?
+  odometerKm    Float?
+  station       String?
+  invoiceNumber String?
+  refueledAt    DateTime @default(now())
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  @@index([assetId, refueledAt])
+}
+
+model VehicleDriverAssignment {
+  id          String    @id @default(cuid())
+  assetId     String
+  asset       Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  driverName  String
+  driverCode  String?
+  driverPhone String?
+  mission     String?
+  startAt     DateTime  @default(now())
+  endAt       DateTime?
+  status      String    @default("active")
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([assetId, status])
+  @@index([assetId, startAt])
+}
+
+model VehicleIncident {
+  id            String   @id @default(cuid())
+  assetId       String
+  asset         Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  type          String
+  occurredAt    DateTime @default(now())
+  driverName    String?
+  description   String
+  cost          Float?
+  insuranceUsed Boolean  @default(false)
+  status        String   @default("open")
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([assetId, occurredAt])
+  @@index([status])
 }
 
 model Inspection {

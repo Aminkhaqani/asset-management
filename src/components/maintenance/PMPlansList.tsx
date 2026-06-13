@@ -57,14 +57,14 @@ interface PMPlanWithStatus {
 
 const triggerTypeLabels: Record<string, string> = {
   time: 'بر اساس زمان',
-  running_hours: 'بر اساس ساعت کارکرد',
-  both: 'بر اساس زمان و ساعت کارکرد',
+  running_hours: 'بر اساس کارکرد/کیلومتر',
+  both: 'بر اساس زمان و کارکرد/کیلومتر',
 }
 
 const dueReasonLabels: Record<string, string> = {
   time: 'بر اساس زمان',
-  running_hours: 'بر اساس ساعت کارکرد',
-  both: 'بر اساس زمان و ساعت کارکرد',
+  running_hours: 'بر اساس کارکرد/کیلومتر',
+  both: 'بر اساس زمان و کارکرد/کیلومتر',
 }
 
 function PmStatusBadge({ pmStatus, triggerType }: { pmStatus: PMPlanWithStatus['pmStatus']; triggerType: PMPlanWithStatus['triggerType'] }) {
@@ -198,13 +198,13 @@ function PMPlanForm({ plan, assetId, onClose }: { plan?: PMPlanWithStatus | null
           />
         </div>
         <div className="space-y-1.5">
-          <Label className="text-sm font-medium">بازه ساعت کارکرد</Label>
+          <Label className="text-sm font-medium">بازه کارکرد/کیلومتر</Label>
           <Input
             type="number"
             step="0.1"
             value={form.intervalRunningHours}
             onChange={(e) => setForm({ ...form, intervalRunningHours: e.target.value })}
-            placeholder="مثلاً: 500"
+            placeholder="مثلاً: 500 ساعت یا 10000 کیلومتر"
             dir="ltr"
           />
         </div>
@@ -221,13 +221,13 @@ function PMPlanForm({ plan, assetId, onClose }: { plan?: PMPlanWithStatus | null
           />
         </div>
         <div className="space-y-1.5">
-          <Label className="text-sm font-medium">ساعت کارکرد آخرین سرویس</Label>
+          <Label className="text-sm font-medium">کارکرد/کیلومتر آخرین سرویس</Label>
           <Input
             type="number"
             step="0.1"
             value={form.lastServiceHours}
             onChange={(e) => setForm({ ...form, lastServiceHours: e.target.value })}
-            placeholder="مثلاً: 1200"
+            placeholder="مثلاً: 1200 ساعت یا 85000 کیلومتر"
             dir="ltr"
           />
         </div>
@@ -439,11 +439,11 @@ export function PMPlansList({ assetId, showGenerate = true }: PMPlansListProps) 
                   {plan.intervalRunningHours && (
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Timer className="h-3.5 w-3.5" />
-                      <span>بازه کارکرد: {toPersianNumber(plan.intervalRunningHours)} ساعت</span>
+                      <span>بازه کارکرد: {toPersianNumber(plan.intervalRunningHours)}</span>
                       {plan.currentRunningHours !== null && (
                         <>
                           <span className="mx-1">•</span>
-                          <span>کارکرد فعلی: {toPersianNumber(plan.currentRunningHours)} ساعت</span>
+                          <span>کارکرد فعلی: {toPersianNumber(plan.currentRunningHours)}</span>
                         </>
                       )}
                     </div>
@@ -480,7 +480,7 @@ export function PMPlansList({ assetId, showGenerate = true }: PMPlansListProps) 
                     )}
                     {plan.pmStatus.isDue && plan.pmStatus.overdueHours && (
                       <span className="text-red-600 dark:text-red-400">
-                        {toPersianNumber(Math.round(plan.pmStatus.overdueHours))} ساعت تأخیر
+                        {toPersianNumber(Math.round(plan.pmStatus.overdueHours))} واحد کارکرد تأخیر
                       </span>
                     )}
                     {plan.pmStatus.isUpcoming && plan.pmStatus.daysRemaining && (
@@ -490,7 +490,7 @@ export function PMPlansList({ assetId, showGenerate = true }: PMPlansListProps) 
                     )}
                     {plan.pmStatus.isUpcoming && plan.pmStatus.hoursRemaining && (
                       <span className="text-amber-600 dark:text-amber-400">
-                        {toPersianNumber(plan.pmStatus.hoursRemaining)} ساعت مانده
+                        {toPersianNumber(plan.pmStatus.hoursRemaining)} واحد کارکرد مانده
                       </span>
                     )}
                     {!plan.pmStatus.isDue && !plan.pmStatus.isUpcoming && plan.pmStatus.daysRemaining && (
@@ -516,7 +516,7 @@ export function PMPlansList({ assetId, showGenerate = true }: PMPlansListProps) 
                   <div className="mt-2 text-xs text-muted-foreground">
                     دلیل: {dueReasonLabels[plan.pmStatus.dueReason]}
                     {plan.triggerType === 'running_hours' && plan.currentRunningHours === null && (
-                      <span className="text-amber-500 mr-1">• ساعت کارکرد ثبت نشده</span>
+                      <span className="text-amber-500 mr-1">• کارکرد/کیلومتر ثبت نشده</span>
                     )}
                   </div>
                 )}

@@ -46,14 +46,23 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         const plan = await db.preventiveMaintenancePlan.findUnique({ where: { id: wo.pmPlanId } })
         if (plan) {
           const completedAt = new Date()
-
-          // Get latest running hours from inspection for this asset
-          const latestInspection = await db.inspection.findFirst({
-            where: { assetId: wo.assetId, runningHours: { not: null } },
-            orderBy: { date: 'desc' },
-            select: { runningHours: true },
+          const asset = await db.asset.findUnique({
+            where: { id: wo.assetId },
+            select: { assetType: true },
           })
-          const currentRunningHours = latestInspection?.runningHours ?? null
+
+          // Vehicles use odometer logs; other assets use inspection running hours.
+          const currentRunningHours = asset?.assetType === 'vehicle'
+            ? (await db.vehicleOdometerLog.findFirst({
+              where: { assetId: wo.assetId },
+              orderBy: { readingAt: 'desc' },
+              select: { readingKm: true },
+            }))?.readingKm ?? null
+            : (await db.inspection.findFirst({
+              where: { assetId: wo.assetId, runningHours: { not: null } },
+              orderBy: { date: 'desc' },
+              select: { runningHours: true },
+            }))?.runningHours ?? null
 
           // Recalculate next due values
           const nextDueAt = recalculateNextDueAt(plan, completedAt)

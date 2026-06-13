@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     const plans = await db.preventiveMaintenancePlan.findMany({
       where: { isActive: true },
       include: {
-        asset: { select: { nameFa: true, assetCode: true, id: true } },
+        asset: { select: { nameFa: true, assetCode: true, id: true, assetType: true } },
       },
     })
 
@@ -26,13 +26,18 @@ export async function POST(request: Request) {
     }> = []
 
     for (const plan of plans) {
-      // Get latest running hours for this asset
-      const latestInspection = await db.inspection.findFirst({
-        where: { assetId: plan.assetId, runningHours: { not: null } },
-        orderBy: { date: 'desc' },
-        select: { runningHours: true },
-      })
-      const currentRunningHours = latestInspection?.runningHours ?? null
+      // Get latest manual usage. Vehicles use odometer logs; other assets use inspection running hours.
+      const currentRunningHours = plan.asset.assetType === 'vehicle'
+        ? (await db.vehicleOdometerLog.findFirst({
+          where: { assetId: plan.assetId },
+          orderBy: { readingAt: 'desc' },
+          select: { readingKm: true },
+        }))?.readingKm ?? null
+        : (await db.inspection.findFirst({
+          where: { assetId: plan.assetId, runningHours: { not: null } },
+          orderBy: { date: 'desc' },
+          select: { runningHours: true },
+        }))?.runningHours ?? null
 
       const pmStatus = calculatePmStatus(plan, currentRunningHours, today)
 
@@ -94,8 +99,8 @@ export async function POST(request: Request) {
       const dueReasonLabel = pmStatus.dueReason === 'time'
         ? 'بر اساس زمان'
         : pmStatus.dueReason === 'running_hours'
-          ? 'بر اساس ساعت کارکرد'
-          : 'بر اساس زمان و ساعت کارکرد'
+          ? (plan.asset.assetType === 'vehicle' ? 'بر اساس کیلومتر' : 'بر اساس ساعت کارکرد')
+          : (plan.asset.assetType === 'vehicle' ? 'بر اساس زمان و کیلومتر' : 'بر اساس زمان و ساعت کارکرد')
 
       const wo = await db.workOrder.create({
         data: {
