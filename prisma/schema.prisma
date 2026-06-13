@@ -27,14 +27,18 @@ model User {
 }
 
 model AssetCategory {
-  id        String  @id @default(cuid())
-  nameFa    String
-  nameEn    String
-  icon      String?
-  color     String?
-  sortOrder Int     @default(0)
+  id          String  @id @default(cuid())
+  nameFa      String
+  nameEn      String
+  assetType   String  @default("equipment")
+  standardKey String? @unique
+  icon        String?
+  color       String?
+  sortOrder   Int     @default(0)
 
   assets Asset[]
+
+  @@index([assetType])
 }
 
 model Location {

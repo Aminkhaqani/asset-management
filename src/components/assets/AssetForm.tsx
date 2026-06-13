@@ -98,6 +98,17 @@ export function AssetForm({ categories, locations, onClose }: AssetFormProps) {
 
   const users = Array.isArray(usersResponse) ? usersResponse : []
 
+  const fallbackCategories = categories.filter((category: any) => !category.assetType || category.assetType === form.assetType)
+
+  const { data: categoriesResponse = fallbackCategories } = useQuery({
+    queryKey: ['categories', form.assetType],
+    queryFn: () => fetch(`/api/categories?assetType=${form.assetType}`).then(r => r.json()),
+  })
+
+  const categoryOptions = Array.isArray(categoriesResponse)
+    ? categoriesResponse
+    : categories.filter((category: any) => category.assetType === form.assetType)
+
   const mutation = useMutation({
     mutationFn: (data: any) => fetch('/api/assets', {
       method: 'POST',
@@ -314,7 +325,7 @@ export function AssetForm({ categories, locations, onClose }: AssetFormProps) {
               <Label className="text-sm font-medium">نوع دارایی *</Label>
               <Select
                 value={form.assetType}
-                onValueChange={(value) => setForm({ ...form, assetType: value, technicalFields: {}, identityFields: {} })}
+                onValueChange={(value) => setForm({ ...form, assetType: value, categoryId: '', technicalFields: {}, identityFields: {} })}
                 required
               >
                 <SelectTrigger><SelectValue placeholder="انتخاب نوع دارایی" /></SelectTrigger>
@@ -330,7 +341,7 @@ export function AssetForm({ categories, locations, onClose }: AssetFormProps) {
               <Select value={form.categoryId} onValueChange={(value) => setForm({ ...form, categoryId: value })} required>
                 <SelectTrigger><SelectValue placeholder="انتخاب دسته‌بندی" /></SelectTrigger>
                 <SelectContent>
-                  {categories.map((category: any) => (
+                  {categoryOptions.map((category: any) => (
                     <SelectItem key={category.id} value={category.id}>{category.nameFa}</SelectItem>
                   ))}
                 </SelectContent>

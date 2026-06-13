@@ -44,12 +44,25 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
+    const assetType = body.assetType || 'equipment'
+    const category = body.categoryId
+      ? await db.assetCategory.findUnique({ where: { id: body.categoryId }, select: { assetType: true } })
+      : null
+
+    if (!category) {
+      return NextResponse.json({ error: 'Invalid asset category' }, { status: 400 })
+    }
+
+    if (category.assetType !== assetType) {
+      return NextResponse.json({ error: 'Asset category does not match asset type' }, { status: 400 })
+    }
+
     const asset = await db.asset.create({
       data: {
         assetCode: body.assetCode,
         nameFa: body.nameFa,
         nameEn: body.nameEn || null,
-        assetType: body.assetType || 'equipment',
+        assetType,
         lifecycleStage: body.lifecycleStage || 'operation',
         assetPortfolio: body.assetPortfolio || null,
         requiredFunction: body.requiredFunction || null,

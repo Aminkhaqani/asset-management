@@ -17,11 +17,11 @@ async function seedDatabase() {
     const tech2 = await db.user.create({ data: { name: 'سجاد حسینی', email: 'tech2@asset.ir', password: 'hashed5', phone: '۰۹۱۲۵۶۷۸۹۰۱', role: 'technician', avatar: null } })
 
     // Categories
-    const catChiller = await db.assetCategory.create({ data: { nameFa: 'چیلر', nameEn: 'Chiller', icon: 'Snowflake', color: '#0ea5e9', sortOrder: 1 } })
-    const catBoiler = await db.assetCategory.create({ data: { nameFa: 'موتورخانه', nameEn: 'Boiler', icon: 'Flame', color: '#ef4444', sortOrder: 2 } })
-    const catPump = await db.assetCategory.create({ data: { nameFa: 'پمپ', nameEn: 'Pump', icon: 'Droplets', color: '#3b82f6', sortOrder: 3 } })
-    const catElec = await db.assetCategory.create({ data: { nameFa: 'برق', nameEn: 'Electrical', icon: 'Zap', color: '#eab308', sortOrder: 4 } })
-    const catElev = await db.assetCategory.create({ data: { nameFa: 'آسانسور', nameEn: 'Elevator', icon: 'ArrowUpDown', color: '#8b5cf6', sortOrder: 5 } })
+    const catChiller = await db.assetCategory.create({ data: { nameFa: 'چیلر', nameEn: 'Chiller', assetType: 'equipment', standardKey: 'equipment_chiller', icon: 'Snowflake', color: '#0ea5e9', sortOrder: 10 } })
+    const catBoiler = await db.assetCategory.create({ data: { nameFa: 'موتورخانه/دیگ', nameEn: 'Boiler', assetType: 'equipment', standardKey: 'equipment_boiler', icon: 'Flame', color: '#ef4444', sortOrder: 20 } })
+    const catPump = await db.assetCategory.create({ data: { nameFa: 'پمپ', nameEn: 'Pump', assetType: 'equipment', standardKey: 'equipment_pump', icon: 'Droplets', color: '#3b82f6', sortOrder: 30 } })
+    const catElec = await db.assetCategory.create({ data: { nameFa: 'برق و تابلو', nameEn: 'Electrical', assetType: 'equipment', standardKey: 'equipment_electrical', icon: 'Zap', color: '#eab308', sortOrder: 40 } })
+    const catElev = await db.assetCategory.create({ data: { nameFa: 'آسانسور/بالابر', nameEn: 'Elevator', assetType: 'equipment', standardKey: 'equipment_elevator', icon: 'ArrowUpDown', color: '#8b5cf6', sortOrder: 50 } })
 
     // Locations
     const locB1 = await db.location.create({ data: { name: 'ساختمان اصلی', building: 'A' } })

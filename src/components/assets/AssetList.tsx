@@ -48,8 +48,12 @@ export function AssetList() {
   const assets = Array.isArray(assetsResponse) ? assetsResponse : []
 
   const { data: categoriesResponse = [] } = useQuery({
-    queryKey: ['categories'],
-    queryFn: () => fetch('/api/categories').then(r => r.json()),
+    queryKey: ['categories', assetType || 'all'],
+    queryFn: () => {
+      const params = new URLSearchParams()
+      if (assetType) params.set('assetType', assetType)
+      return fetch(`/api/categories?${params}`).then(r => r.json())
+    },
   })
 
   const categories = Array.isArray(categoriesResponse) ? categoriesResponse : []
@@ -85,7 +89,13 @@ export function AssetList() {
       {/* Filters */}
       {showFilters && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <Select value={assetType} onValueChange={(v) => setAssetType(v === '__all__' ? '' : v)}>
+          <Select
+            value={assetType}
+            onValueChange={(v) => {
+              setAssetType(v === '__all__' ? '' : v)
+              setCategoryId('')
+            }}
+          >
             <SelectTrigger><SelectValue placeholder="نوع دارایی" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="__all__">همه</SelectItem>
@@ -99,7 +109,10 @@ export function AssetList() {
             <SelectContent>
               <SelectItem value="__all__">همه</SelectItem>
               {categories.map((cat: any) => (
-                <SelectItem key={cat.id} value={cat.id}>{cat.nameFa}</SelectItem>
+                <SelectItem key={cat.id} value={cat.id}>
+                  {cat.nameFa}
+                  {!assetType && cat.assetType ? ` - ${assetTypeDefinitions.find((type) => type.value === cat.assetType)?.label || cat.assetType}` : ''}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
