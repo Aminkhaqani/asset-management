@@ -7,11 +7,13 @@ import { cn } from "@/lib/utils"
 
 function Tabs({
   className,
+  dir = "rtl",
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.Root>) {
   return (
     <TabsPrimitive.Root
       data-slot="tabs"
+      dir={dir}
       className={cn("flex flex-col gap-2", className)}
       {...props}
     />
@@ -20,13 +22,15 @@ function Tabs({
 
 function TabsList({
   className,
+  dir = "rtl",
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.List>) {
   return (
     <TabsPrimitive.List
       data-slot="tabs-list"
+      dir={dir}
       className={cn(
-        "bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-lg p-[3px]",
+        "bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-start rounded-lg p-[3px]",
         className
       )}
       {...props}
