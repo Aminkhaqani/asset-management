@@ -20,10 +20,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  inspections       Inspection[]
-  assignedWorkOrders WorkOrder[] @relation("AssignedTechnician")
-  createdFaults     Fault[]      @relation("FaultReporter")
-  approvals         WorkOrder[]  @relation("Approver")
+  inspections        Inspection[]
+  assignedWorkOrders WorkOrder[]  @relation("AssignedTechnician")
+  createdFaults      Fault[]      @relation("FaultReporter")
+  approvals          WorkOrder[]  @relation("Approver")
 }
 
 model AssetCategory {
@@ -38,7 +38,7 @@ model AssetCategory {
 }
 
 model Location {
-  id       String  @id @default(cuid())
+  id       String     @id @default(cuid())
   name     String
   floor    String?
   zone     String?
@@ -51,29 +51,37 @@ model Location {
 }
 
 model Asset {
-  id             String    @id @default(cuid())
-  assetCode      String    @unique
-  nameFa         String
-  nameEn         String?
-  assetType      String    @default("equipment")
-  categoryId     String
-  category       AssetCategory @relation(fields: [categoryId], references: [id])
-  brand          String?
-  model          String?
-  serialNumber   String?
-  locationId     String
-  location       Location  @relation(fields: [locationId], references: [id])
-  installDate    DateTime?
-  warrantyExpiry DateTime?
-  capacity       String?
-  specifications String?
-  customFields   Json      @default("{}")
-  criticality    String    @default("medium")
-  status         String    @default("active")
-  qrCode         String    @unique
-  notes          String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id                     String        @id @default(cuid())
+  assetCode              String        @unique
+  nameFa                 String
+  nameEn                 String?
+  assetType              String        @default("equipment")
+  lifecycleStage         String        @default("operation")
+  assetPortfolio         String?
+  requiredFunction       String?
+  valueContribution      String?
+  performanceTarget      String?
+  riskImpact             String        @default("medium")
+  riskLikelihood         String        @default("medium")
+  regulatoryRequirements String?
+  categoryId             String
+  category               AssetCategory @relation(fields: [categoryId], references: [id])
+  brand                  String?
+  model                  String?
+  serialNumber           String?
+  locationId             String
+  location               Location      @relation(fields: [locationId], references: [id])
+  installDate            DateTime?
+  warrantyExpiry         DateTime?
+  capacity               String?
+  specifications         String?
+  customFields           Json          @default("{}")
+  criticality            String        @default("medium")
+  status                 String        @default("active")
+  qrCode                 String        @unique
+  notes                  String?
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
 
   inspections Inspection[]
   faults      Fault[]
@@ -82,6 +90,12 @@ model Asset {
   attachments AssetAttachment[]
   checklists  Checklist[]
   pmPlans     PreventiveMaintenancePlan[]
+
+  @@index([assetType])
+  @@index([lifecycleStage])
+  @@index([status])
+  @@index([categoryId])
+  @@index([locationId])
 }
 
 model AssetAttachment {
@@ -113,63 +127,88 @@ model Inspection {
   notes        String?
   photos       String?
   createdAt    DateTime @default(now())
+
+  @@index([assetId, date])
+  @@index([inspectorId])
+  @@index([status])
 }
 
 model Fault {
-  id           String    @id @default(cuid())
-  assetId      String
-  asset        Asset     @relation(fields: [assetId], references: [id])
-  reportedById String
-  reportedBy   User      @relation("FaultReporter", fields: [reportedById], references: [id])
-  faultType    String
-  priority     String    @default("medium")
-  status       String    @default("open")
-  description  String
-  reportedAt   DateTime  @default(now())
-  resolvedAt   DateTime?
-  resolution   String?
-  photos       String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id              String    @id @default(cuid())
+  assetId         String
+  asset           Asset     @relation(fields: [assetId], references: [id])
+  reportedById    String
+  reportedBy      User      @relation("FaultReporter", fields: [reportedById], references: [id])
+  faultType       String
+  failureMode     String?
+  failureCause    String?
+  failureEffect   String?
+  detectionMethod String?
+  priority        String    @default("medium")
+  status          String    @default("open")
+  description     String
+  reportedAt      DateTime  @default(now())
+  resolvedAt      DateTime?
+  resolution      String?
+  photos          String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   workOrders WorkOrder[]
+
+  @@index([assetId, reportedAt])
+  @@index([reportedById])
+  @@index([status])
+  @@index([priority])
 }
 
 model WorkOrder {
-  id            String    @id @default(cuid())
-  type          String
-  assetId       String
-  asset         Asset     @relation(fields: [assetId], references: [id])
-  faultId       String?
-  fault         Fault?    @relation(fields: [faultId], references: [id])
-  title         String
-  description   String?
-  priority      String    @default("medium")
-  status        String    @default("pending")
-  assignedToId  String?
-  assignedTo    User?     @relation("AssignedTechnician", fields: [assignedToId], references: [id])
-  approvedById  String?
-  approvedBy    User?     @relation("Approver", fields: [approvedById], references: [id])
-  scheduledDate DateTime?
-  startedAt     DateTime?
-  completedAt   DateTime?
-  approvedAt    DateTime?
-  partsConsumed String?
-  photos        String?
-  notes         String?
-  recurrence    String?
-  nextDueDate   DateTime?
-  repairType    String    @default("internal")
-  workshopId    String?
-  workshop      Workshop? @relation(fields: [workshopId], references: [id])
-  sentToWorkshopAt DateTime?
+  id                     String                     @id @default(cuid())
+  type                   String
+  assetId                String
+  asset                  Asset                      @relation(fields: [assetId], references: [id])
+  faultId                String?
+  fault                  Fault?                     @relation(fields: [faultId], references: [id])
+  title                  String
+  description            String?
+  maintenanceSubtype     String?
+  maintenanceActivity    String?
+  requiredFunction       String?
+  failureMode            String?
+  failureCause           String?
+  downtimeHours          Float?
+  priority               String                     @default("medium")
+  status                 String                     @default("pending")
+  assignedToId           String?
+  assignedTo             User?                      @relation("AssignedTechnician", fields: [assignedToId], references: [id])
+  approvedById           String?
+  approvedBy             User?                      @relation("Approver", fields: [approvedById], references: [id])
+  scheduledDate          DateTime?
+  startedAt              DateTime?
+  completedAt            DateTime?
+  approvedAt             DateTime?
+  partsConsumed          String?
+  photos                 String?
+  notes                  String?
+  recurrence             String?
+  nextDueDate            DateTime?
+  repairType             String                     @default("internal")
+  workshopId             String?
+  workshop               Workshop?                  @relation(fields: [workshopId], references: [id])
+  sentToWorkshopAt       DateTime?
   returnedFromWorkshopAt DateTime?
-  workshopCost  Float?
-  workshopInvoiceNumber String?
-  pmPlanId      String?
-  pmPlan        PreventiveMaintenancePlan? @relation(fields: [pmPlanId], references: [id])
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  workshopCost           Float?
+  workshopInvoiceNumber  String?
+  pmPlanId               String?
+  pmPlan                 PreventiveMaintenancePlan? @relation(fields: [pmPlanId], references: [id])
+  createdAt              DateTime                   @default(now())
+  updatedAt              DateTime                   @updatedAt
+
+  @@index([assetId, createdAt])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([type])
+  @@index([scheduledDate])
 }
 
 model Workshop {
@@ -185,22 +224,22 @@ model Workshop {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  workOrders    WorkOrder[]
+  workOrders WorkOrder[]
 }
 
 model Checklist {
-  id        String    @id @default(cuid())
-  assetId   String
-  asset     Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  title     String
-  type      String
-  frequency String?
-  items     String
-  isActive  Boolean   @default(true)
+  id         String    @id @default(cuid())
+  assetId    String
+  asset      Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  title      String
+  type       String
+  frequency  String?
+  items      String
+  isActive   Boolean   @default(true)
   lastDoneAt DateTime?
-  nextDueAt DateTime?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  nextDueAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 }
 
 model TimelineEvent {
@@ -230,30 +269,34 @@ model Notification {
 }
 
 model PreventiveMaintenancePlan {
-  id                    String    @id @default(cuid())
-  assetId               String
-  asset                 Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  title                 String
-  description           String?
-  isActive              Boolean   @default(true)
+  id                       String    @id @default(cuid())
+  assetId                  String
+  asset                    Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  title                    String
+  description              String?
+  isActive                 Boolean   @default(true)
   // time-based trigger
-  intervalDays          Int?
-  lastServiceAt         DateTime?
-  nextDueAt             DateTime?
+  intervalDays             Int?
+  lastServiceAt            DateTime?
+  nextDueAt                DateTime?
   // running-hours-based trigger
-  intervalRunningHours  Float?
-  lastServiceHours      Float?
-  nextDueRunningHours   Float?
+  intervalRunningHours     Float?
+  lastServiceHours         Float?
+  nextDueRunningHours      Float?
   // generation control
-  leadTimeDays          Int       @default(3)
-  autoCreateWorkOrder   Boolean   @default(true)
-  lastGeneratedAt       DateTime?
+  leadTimeDays             Int       @default(3)
+  autoCreateWorkOrder      Boolean   @default(true)
+  lastGeneratedAt          DateTime?
   lastGeneratedWorkOrderId String?
-  priority              String    @default("medium")
-  checklistTemplate     String?
-  notes                 String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  priority                 String    @default("medium")
+  checklistTemplate        String?
+  notes                    String?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
 
   workOrders WorkOrder[]
+
+  @@index([assetId])
+  @@index([isActive])
+  @@index([nextDueAt])
 }

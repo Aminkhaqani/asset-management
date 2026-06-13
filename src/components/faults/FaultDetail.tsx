@@ -10,6 +10,7 @@ import { PersianDate } from '@/components/shared/PersianDate'
 import { faultTypeLabels, roleLabels } from '@/lib/persian'
 import { ArrowRight, AlertTriangle, User, Wrench, Clock, CheckCircle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { detectionMethodLabels, failureCauseLabels } from '@/lib/standards'
 
 export function FaultDetail() {
   const { selectedFaultId, navigate } = useAppStore()
@@ -84,6 +85,40 @@ export function FaultDetail() {
           <p className="text-sm">{fault.description}</p>
         </CardContent>
       </Card>
+
+      {(fault.failureMode || fault.failureCause || fault.failureEffect || fault.detectionMethod) && (
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">تحلیل خرابی</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {fault.failureMode && (
+              <div className="rounded-lg bg-muted/35 p-3 text-sm">
+                <p className="text-xs text-muted-foreground mb-1">حالت خرابی</p>
+                <p className="font-medium">{fault.failureMode}</p>
+              </div>
+            )}
+            {fault.failureCause && (
+              <div className="rounded-lg bg-muted/35 p-3 text-sm">
+                <p className="text-xs text-muted-foreground mb-1">علت خرابی</p>
+                <p className="font-medium">{failureCauseLabels[fault.failureCause] || fault.failureCause}</p>
+              </div>
+            )}
+            {fault.detectionMethod && (
+              <div className="rounded-lg bg-muted/35 p-3 text-sm">
+                <p className="text-xs text-muted-foreground mb-1">روش تشخیص</p>
+                <p className="font-medium">{detectionMethodLabels[fault.detectionMethod] || fault.detectionMethod}</p>
+              </div>
+            )}
+            {fault.failureEffect && (
+              <div className="rounded-lg bg-muted/35 p-3 text-sm">
+                <p className="text-xs text-muted-foreground mb-1">اثر خرابی</p>
+                <p className="font-medium">{fault.failureEffect}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Reporter */}
       <Card className="border-0 shadow-sm">

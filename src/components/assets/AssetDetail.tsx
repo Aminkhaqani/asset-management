@@ -28,6 +28,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PMPlansList } from '@/components/maintenance/PMPlansList'
 import { getAssetTypeDefinition } from '@/lib/asset-types'
+import { lifecycleStageLabels, riskLevelLabels } from '@/lib/standards'
 
 type DetailRow = {
   key: string
@@ -218,7 +219,7 @@ export function AssetDetail() {
               <p className="text-sm font-medium">{toPersianNumber(activeWorkOrders.length)} دستورکار</p>
             </div>
           </div>
-          <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+          <div className="mt-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2 text-sm">
             <div className="rounded-lg border p-3">
               <p className="text-xs text-muted-foreground mb-1">مکان فعلی</p>
               <p className="font-medium">{asset.location?.name || '—'}</p>
@@ -231,6 +232,16 @@ export function AssetDetail() {
               <p className="text-xs text-muted-foreground mb-1">PM فعال</p>
               <p className="font-medium">{toPersianNumber(activePmPlans.length)} برنامه</p>
             </div>
+            <div className="rounded-lg border p-3">
+              <p className="text-xs text-muted-foreground mb-1">مرحله چرخه عمر</p>
+              <p className="font-medium">{lifecycleStageLabels[asset.lifecycleStage] || asset.lifecycleStage || '—'}</p>
+            </div>
+            <div className="rounded-lg border p-3">
+              <p className="text-xs text-muted-foreground mb-1">ریسک اثر/احتمال</p>
+              <p className="font-medium">
+                {riskLevelLabels[asset.riskImpact] || asset.riskImpact || '—'} / {riskLevelLabels[asset.riskLikelihood] || asset.riskLikelihood || '—'}
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -239,6 +250,7 @@ export function AssetDetail() {
         <TabsList className="w-full justify-start overflow-x-auto h-auto p-1">
           <TabsTrigger value="summary" className="min-w-24">پرونده</TabsTrigger>
           <TabsTrigger value="identity" className="min-w-28">هویتی/مالکیت</TabsTrigger>
+          <TabsTrigger value="standard" className="min-w-28">ارزش/ریسک</TabsTrigger>
           <TabsTrigger value="technical" className="min-w-24">فنی</TabsTrigger>
           <TabsTrigger value="assignment" className="min-w-28">تخصیص/مکان</TabsTrigger>
           <TabsTrigger value="pm" className="min-w-24">PM</TabsTrigger>
@@ -255,6 +267,7 @@ export function AssetDetail() {
               { key: 'nameEn', label: 'نام انگلیسی', value: asset.nameEn },
               { key: 'assetType', label: 'نوع دارایی', value: assetType.label },
               { key: 'category', label: 'دسته‌بندی', value: asset.category?.nameFa },
+              { key: 'lifecycleStage', label: 'مرحله چرخه عمر', value: lifecycleStageLabels[asset.lifecycleStage] || asset.lifecycleStage },
               { key: 'criticality', label: 'اهمیت', value: asset.criticality },
               { key: 'status', label: 'وضعیت', value: asset.status },
               { key: 'qrCode', label: 'کد QR', value: asset.qrCode },
@@ -275,6 +288,21 @@ export function AssetDetail() {
         <TabsContent value="identity" className="space-y-3">
           <SectionCard title="اطلاعات هویتی و مالکیت">
             <DetailGrid rows={identityRows} />
+          </SectionCard>
+        </TabsContent>
+
+        <TabsContent value="standard" className="space-y-3">
+          <SectionCard title="هم‌راستایی با ارزش، عملکرد و ریسک">
+            <DetailGrid rows={[
+              { key: 'lifecycleStage', label: 'مرحله چرخه عمر', value: lifecycleStageLabels[asset.lifecycleStage] || asset.lifecycleStage },
+              { key: 'assetPortfolio', label: 'پرتفوی/گروه دارایی', value: asset.assetPortfolio },
+              { key: 'riskImpact', label: 'شدت پیامد ریسک', value: riskLevelLabels[asset.riskImpact] || asset.riskImpact },
+              { key: 'riskLikelihood', label: 'احتمال وقوع ریسک', value: riskLevelLabels[asset.riskLikelihood] || asset.riskLikelihood },
+              { key: 'requiredFunction', label: 'کارکرد مورد انتظار', value: asset.requiredFunction },
+              { key: 'valueContribution', label: 'ارزش و نقش در اهداف سازمان', value: asset.valueContribution },
+              { key: 'performanceTarget', label: 'هدف عملکردی/سطح خدمت', value: asset.performanceTarget },
+              { key: 'regulatoryRequirements', label: 'الزامات قانونی، ایمنی و قراردادی', value: asset.regulatoryRequirements },
+            ]} />
           </SectionCard>
         </TabsContent>
 

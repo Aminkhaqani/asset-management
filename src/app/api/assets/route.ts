@@ -10,6 +10,7 @@ export async function GET(request: Request) {
     const locationId = searchParams.get('locationId') || ''
     const criticality = searchParams.get('criticality') || ''
     const assetType = searchParams.get('assetType') || ''
+    const lifecycleStage = searchParams.get('lifecycleStage') || ''
 
     const where: Record<string, unknown> = {}
     
@@ -25,6 +26,7 @@ export async function GET(request: Request) {
     if (locationId) where.locationId = locationId
     if (criticality) where.criticality = criticality
     if (assetType) where.assetType = assetType
+    if (lifecycleStage) where.lifecycleStage = lifecycleStage
 
     const assets = await db.asset.findMany({
       where,
@@ -48,6 +50,14 @@ export async function POST(request: Request) {
         nameFa: body.nameFa,
         nameEn: body.nameEn || null,
         assetType: body.assetType || 'equipment',
+        lifecycleStage: body.lifecycleStage || 'operation',
+        assetPortfolio: body.assetPortfolio || null,
+        requiredFunction: body.requiredFunction || null,
+        valueContribution: body.valueContribution || null,
+        performanceTarget: body.performanceTarget || null,
+        riskImpact: body.riskImpact || 'medium',
+        riskLikelihood: body.riskLikelihood || 'medium',
+        regulatoryRequirements: body.regulatoryRequirements || null,
         categoryId: body.categoryId,
         locationId: body.locationId,
         brand: body.brand || null,

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { repairTypeLabels } from '@/lib/persian'
+import { failureCauseOptions, maintenanceActivityOptions, maintenanceSubtypeOptions } from '@/lib/standards'
 
 interface WorkOrderFormProps {
   type: 'preventive' | 'corrective'
@@ -21,6 +22,13 @@ export function WorkOrderForm({ type, onClose }: WorkOrderFormProps) {
     assetId: '',
     title: '',
     description: '',
+    maintenanceSubtype: type === 'preventive' ? 'predetermined' : 'immediate',
+    maintenanceActivity: type === 'preventive' ? 'inspection' : 'repair',
+    requiredFunction: '',
+    faultId: '',
+    failureMode: '',
+    failureCause: '',
+    downtimeHours: '',
     priority: 'medium',
     assignedToId: '',
     scheduledDate: '',
@@ -71,10 +79,19 @@ export function WorkOrderForm({ type, onClose }: WorkOrderFormProps) {
       assetId: form.assetId,
       title: form.title,
       description: form.description,
+      maintenanceSubtype: form.maintenanceSubtype,
+      maintenanceActivity: form.maintenanceActivity,
+      requiredFunction: form.requiredFunction || undefined,
       priority: form.priority,
       assignedToId: form.assignedToId || undefined,
       notes: form.notes,
       repairType: form.repairType,
+    }
+    if (type === 'corrective') {
+      data.faultId = form.faultId || undefined
+      data.failureMode = form.failureMode || undefined
+      data.failureCause = form.failureCause || undefined
+      data.downtimeHours = form.downtimeHours ? parseFloat(form.downtimeHours) : undefined
     }
     if (form.scheduledDate) {
       data.scheduledDate = new Date(form.scheduledDate).toISOString()
@@ -122,6 +139,31 @@ export function WorkOrderForm({ type, onClose }: WorkOrderFormProps) {
               <SelectItem value="medium">متوسط</SelectItem>
               <SelectItem value="high">زیاد</SelectItem>
               <SelectItem value="critical">بحرانی</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">زیرنوع نگهداشت</Label>
+          <Select value={form.maintenanceSubtype} onValueChange={(v) => setForm({ ...form, maintenanceSubtype: v })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {maintenanceSubtypeOptions[type].map((option) => (
+                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">فعالیت نگهداشت</Label>
+          <Select value={form.maintenanceActivity} onValueChange={(v) => setForm({ ...form, maintenanceActivity: v })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {maintenanceActivityOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -212,6 +254,67 @@ export function WorkOrderForm({ type, onClose }: WorkOrderFormProps) {
           </Select>
         </div>
       )}
+
+      {type === 'corrective' && (
+        <div className="space-y-4 rounded-xl border bg-muted/20 p-4">
+          <p className="text-sm font-medium">اطلاعات خرابی و توقف</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">خرابی مرتبط</Label>
+              <Select value={form.faultId} onValueChange={(v) => setForm({ ...form, faultId: v })}>
+                <SelectTrigger><SelectValue placeholder="انتخاب خرابی باز" /></SelectTrigger>
+                <SelectContent>
+                  {faults.map((fault: any) => (
+                    <SelectItem key={fault.id} value={fault.id}>
+                      {fault.asset?.assetCode} - {fault.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">حالت خرابی</Label>
+              <Input
+                value={form.failureMode}
+                onChange={(e) => setForm({ ...form, failureMode: e.target.value })}
+                placeholder="مثلا نشتی، گیرپاژ، افت فشار، عدم راه‌اندازی"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">علت خرابی</Label>
+              <Select value={form.failureCause} onValueChange={(v) => setForm({ ...form, failureCause: v })}>
+                <SelectTrigger><SelectValue placeholder="انتخاب علت" /></SelectTrigger>
+                <SelectContent>
+                  {failureCauseOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">زمان توقف</Label>
+              <Input
+                type="number"
+                min="0"
+                step="0.1"
+                value={form.downtimeHours}
+                onChange={(e) => setForm({ ...form, downtimeHours: e.target.value })}
+                placeholder="ساعت"
+                dir="ltr"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-1.5">
+        <Label className="text-sm font-medium">کارکرد مورد نیاز</Label>
+        <Textarea
+          value={form.requiredFunction}
+          onChange={(e) => setForm({ ...form, requiredFunction: e.target.value })}
+          placeholder="کارکردی که این دستورکار باید حفظ یا بازیابی کند"
+        />
+      </div>
 
       <div className="space-y-1.5">
         <Label className="text-sm font-medium">شرح کار</Label>

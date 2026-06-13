@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { assetTypeDefinitions, AssetTypeField, getAssetTypeDefinition } from '@/lib/asset-types'
+import { lifecycleStageOptions, riskLevelOptions } from '@/lib/standards'
 import { Plus, Trash2 } from 'lucide-react'
 
 interface AssetFormProps {
@@ -63,6 +64,14 @@ export function AssetForm({ categories, locations, onClose }: AssetFormProps) {
     nameFa: '',
     nameEn: '',
     assetType: 'equipment',
+    lifecycleStage: 'operation',
+    assetPortfolio: '',
+    requiredFunction: '',
+    valueContribution: '',
+    performanceTarget: '',
+    riskImpact: 'medium',
+    riskLikelihood: 'medium',
+    regulatoryRequirements: '',
     categoryId: '',
     locationId: '',
     brand: '',
@@ -143,6 +152,14 @@ export function AssetForm({ categories, locations, onClose }: AssetFormProps) {
       nameFa: form.nameFa,
       nameEn: form.nameEn,
       assetType: form.assetType,
+      lifecycleStage: form.lifecycleStage,
+      assetPortfolio: form.assetPortfolio,
+      requiredFunction: form.requiredFunction,
+      valueContribution: form.valueContribution,
+      performanceTarget: form.performanceTarget,
+      riskImpact: form.riskImpact,
+      riskLikelihood: form.riskLikelihood,
+      regulatoryRequirements: form.regulatoryRequirements,
       categoryId: form.categoryId,
       locationId: form.locationId,
       brand: form.brand,
@@ -273,6 +290,7 @@ export function AssetForm({ categories, locations, onClose }: AssetFormProps) {
         <TabsList className="w-full justify-start overflow-x-auto h-auto p-1">
           <TabsTrigger value="base" className="min-w-24">اصلی</TabsTrigger>
           <TabsTrigger value="identity" className="min-w-28">هویتی/مالکیت</TabsTrigger>
+          <TabsTrigger value="standard" className="min-w-28">ارزش/ریسک</TabsTrigger>
           <TabsTrigger value="technical" className="min-w-24">فنی</TabsTrigger>
           <TabsTrigger value="assignment" className="min-w-28">تخصیص/مکان</TabsTrigger>
           <TabsTrigger value="pm" className="min-w-24">PM</TabsTrigger>
@@ -335,6 +353,84 @@ export function AssetForm({ categories, locations, onClose }: AssetFormProps) {
 
         <TabsContent value="identity" className="space-y-4">
           {renderFieldGrid(selectedAssetType.identityFields, 'identityFields')}
+        </TabsContent>
+
+        <TabsContent value="standard" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">مرحله چرخه عمر</Label>
+              <Select value={form.lifecycleStage} onValueChange={(value) => setForm({ ...form, lifecycleStage: value })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {lifecycleStageOptions.map((stage) => (
+                    <SelectItem key={stage.value} value={stage.value}>{stage.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">پرتفوی/گروه دارایی</Label>
+              <Input
+                value={form.assetPortfolio}
+                onChange={(e) => setForm({ ...form, assetPortfolio: e.target.value })}
+                placeholder="مثلا ناوگان خط ۱، تاسیسات مرکزی، تجهیزات حیاتی"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">شدت پیامد ریسک</Label>
+              <Select value={form.riskImpact} onValueChange={(value) => setForm({ ...form, riskImpact: value })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {riskLevelOptions.map((level) => (
+                    <SelectItem key={level.value} value={level.value}>{level.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">احتمال وقوع ریسک</Label>
+              <Select value={form.riskLikelihood} onValueChange={(value) => setForm({ ...form, riskLikelihood: value })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {riskLevelOptions.map((level) => (
+                    <SelectItem key={level.value} value={level.value}>{level.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5 md:col-span-2">
+              <Label className="text-sm font-medium">کارکرد مورد انتظار</Label>
+              <Textarea
+                value={form.requiredFunction}
+                onChange={(e) => setForm({ ...form, requiredFunction: e.target.value })}
+                placeholder="کارکردی که دارایی باید در شرایط تعریف‌شده انجام دهد"
+              />
+            </div>
+            <div className="space-y-1.5 md:col-span-2">
+              <Label className="text-sm font-medium">ارزش و نقش در اهداف سازمان</Label>
+              <Textarea
+                value={form.valueContribution}
+                onChange={(e) => setForm({ ...form, valueContribution: e.target.value })}
+                placeholder="این دارایی چه ارزشی ایجاد می‌کند و به کدام هدف عملیاتی/مالی/ایمنی وصل است"
+              />
+            </div>
+            <div className="space-y-1.5 md:col-span-2">
+              <Label className="text-sm font-medium">هدف عملکردی/سطح خدمت</Label>
+              <Textarea
+                value={form.performanceTarget}
+                onChange={(e) => setForm({ ...form, performanceTarget: e.target.value })}
+                placeholder="مثلا دسترس‌پذیری هدف، ظرفیت هدف، کیفیت خدمت یا شاخص عملکرد"
+              />
+            </div>
+            <div className="space-y-1.5 md:col-span-2">
+              <Label className="text-sm font-medium">الزامات قانونی، ایمنی و قراردادی</Label>
+              <Textarea
+                value={form.regulatoryRequirements}
+                onChange={(e) => setForm({ ...form, regulatoryRequirements: e.target.value })}
+                placeholder="الزامات بازرسی، گارانتی، قرارداد، ایمنی یا مقررات مرتبط"
+              />
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="technical" className="space-y-4">

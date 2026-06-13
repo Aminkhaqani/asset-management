@@ -8,12 +8,17 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
+import { detectionMethodOptions, failureCauseOptions } from '@/lib/standards'
 
 export function FaultForm({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient()
   const [form, setForm] = useState({
     assetId: '',
     faultType: 'mechanical',
+    failureMode: '',
+    failureCause: '',
+    failureEffect: '',
+    detectionMethod: '',
     priority: 'medium',
     description: '',
   })
@@ -42,7 +47,14 @@ export function FaultForm({ onClose }: { onClose: () => void }) {
     e.preventDefault()
     const techUser = users.find((u: any) => u.role === 'technician')
     mutation.mutate({
-      ...form,
+      assetId: form.assetId,
+      faultType: form.faultType,
+      priority: form.priority,
+      description: form.description,
+      failureMode: form.failureMode || undefined,
+      failureCause: form.failureCause || undefined,
+      failureEffect: form.failureEffect || undefined,
+      detectionMethod: form.detectionMethod || undefined,
       reportedById: techUser?.id || users[0]?.id,
     })
   }
@@ -87,6 +99,47 @@ export function FaultForm({ onClose }: { onClose: () => void }) {
               <SelectItem value="critical">بحرانی</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">حالت خرابی</Label>
+          <Input
+            value={form.failureMode}
+            onChange={(e) => setForm({ ...form, failureMode: e.target.value })}
+            placeholder="مثلا نشتی، قطع برق، افت فشار، گیرپاژ"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">علت خرابی</Label>
+          <Select value={form.failureCause} onValueChange={(v) => setForm({ ...form, failureCause: v })}>
+            <SelectTrigger><SelectValue placeholder="انتخاب علت" /></SelectTrigger>
+            <SelectContent>
+              {failureCauseOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">روش تشخیص</Label>
+          <Select value={form.detectionMethod} onValueChange={(v) => setForm({ ...form, detectionMethod: v })}>
+            <SelectTrigger><SelectValue placeholder="انتخاب روش تشخیص" /></SelectTrigger>
+            <SelectContent>
+              {detectionMethodOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">اثر خرابی</Label>
+          <Input
+            value={form.failureEffect}
+            onChange={(e) => setForm({ ...form, failureEffect: e.target.value })}
+            placeholder="اثر روی ایمنی، تولید، کیفیت یا خدمت"
+          />
         </div>
       </div>
 

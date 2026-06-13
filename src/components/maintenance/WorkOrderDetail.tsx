@@ -8,9 +8,10 @@ import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { PriorityBadge } from '@/components/shared/PriorityBadge'
 import { PersianDate } from '@/components/shared/PersianDate'
-import { toPersianNumber, recurrenceLabels, roleLabels, statusLabels, repairTypeLabels, workshopSpecialtyLabels } from '@/lib/persian'
+import { toPersianNumber, recurrenceLabels, roleLabels, repairTypeLabels, workshopSpecialtyLabels } from '@/lib/persian'
 import { ArrowRight, Wrench, User, Calendar, Clock, CheckCircle, AlertTriangle, Building2, Phone, Receipt, DollarSign, Send, ArrowLeftRight } from 'lucide-react'
 import { toast } from 'sonner'
+import { failureCauseLabels, maintenanceActivityLabels, maintenanceSubtypeLabels } from '@/lib/standards'
 
 export function WorkOrderDetail() {
   const { selectedWorkOrderId, navigate } = useAppStore()
@@ -96,6 +97,20 @@ export function WorkOrderDetail() {
               </Badge>
             </div>
           </div>
+          {(wo.maintenanceSubtype || wo.maintenanceActivity) && (
+            <div className="flex flex-wrap items-center gap-2">
+              {wo.maintenanceSubtype && (
+                <Badge variant="outline" className="text-xs">
+                  {maintenanceSubtypeLabels[wo.maintenanceSubtype] || wo.maintenanceSubtype}
+                </Badge>
+              )}
+              {wo.maintenanceActivity && (
+                <Badge variant="secondary" className="text-xs">
+                  {maintenanceActivityLabels[wo.maintenanceActivity] || wo.maintenanceActivity}
+                </Badge>
+              )}
+            </div>
+          )}
           
           {/* Workflow Progress */}
           <div className="flex items-center gap-1 mt-3">
@@ -120,6 +135,12 @@ export function WorkOrderDetail() {
         </CardHeader>
         <CardContent className="space-y-2">
           {wo.description && <p className="text-sm">{wo.description}</p>}
+          {wo.requiredFunction && (
+            <div className="rounded-lg bg-muted/35 p-3 text-sm">
+              <p className="text-xs text-muted-foreground mb-1">کارکرد مورد نیاز</p>
+              <p>{wo.requiredFunction}</p>
+            </div>
+          )}
           {wo.assignedTo && (
             <div className="flex items-center gap-2 text-sm">
               <User className="h-4 w-4 text-muted-foreground" />
@@ -164,6 +185,37 @@ export function WorkOrderDetail() {
           )}
         </CardContent>
       </Card>
+
+      {(wo.failureMode || wo.failureCause || wo.downtimeHours != null) && (
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-orange-500" />
+              تحلیل خرابی و توقف
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {wo.failureMode && (
+              <div className="rounded-lg bg-muted/35 p-3 text-sm">
+                <p className="text-xs text-muted-foreground mb-1">حالت خرابی</p>
+                <p className="font-medium">{wo.failureMode}</p>
+              </div>
+            )}
+            {wo.failureCause && (
+              <div className="rounded-lg bg-muted/35 p-3 text-sm">
+                <p className="text-xs text-muted-foreground mb-1">علت خرابی</p>
+                <p className="font-medium">{failureCauseLabels[wo.failureCause] || wo.failureCause}</p>
+              </div>
+            )}
+            {wo.downtimeHours != null && (
+              <div className="rounded-lg bg-muted/35 p-3 text-sm">
+                <p className="text-xs text-muted-foreground mb-1">زمان توقف</p>
+                <p className="font-medium">{toPersianNumber(wo.downtimeHours)} ساعت</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Workshop Info - only shown for external repairs */}
       {wo.repairType === 'external' && wo.workshop && (
